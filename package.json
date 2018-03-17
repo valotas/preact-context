@@ -1,0 +1,34 @@
+{
+  "name": "preact-context",
+  "version": "0.0.0",
+  "description": "React New Context Api for preact",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsc -p .",
+    "prepare": "npm run clean && npm run build",
+    "watch:build": "npm run build -- -w",
+    "test": "mocha ./dist/**/*.Spec.js",
+    "watch:test": "npm run test -- --watch --reporter dot",
+    "watch": "npm run prepare && npm-run-all --parallel watch:*"
+  },
+  "author": "",
+  "peerDependencies": {
+    "preact": "^8.2.7"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.2",
+    "@types/jsdom": "^11.0.4",
+    "@types/mocha": "^2.2.48",
+    "chai": "^4.1.2",
+    "jsdom": "^11.6.2",
+    "mocha": "^5.0.4",
+    "npm-run-all": "^4.1.2",
+    "preact": "^8.2.7",
+    "rimraf": "^2.6.2",
+    "typescript": "^2.7.2"
+  },
+  "dependencies": {
+    "npm": "^5.7.1"
+  }
+}
