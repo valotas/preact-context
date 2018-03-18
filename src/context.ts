@@ -93,8 +93,13 @@ export function createContext<T>(value: T): Context<T> {
     render() {
       const { children, render } = this.props;
       const r = (children && children[0]) || render;
+      if (render && render !== r) {
+        console.warn(
+          "Both children and a render function is define. Children will be used"
+        );
+      }
       if (typeof r === "function") {
-        return r(this.state.value);
+        return r(this.state.value || value);
       }
       return r;
     }
@@ -114,13 +119,10 @@ function findProvider<T>(
   providers: ContextProvider<T>[] = [],
   context: any
 ): ContextProvider<T> | null {
-  return providers.reduce((p, current) => {
+  return providers.reduce<ContextProvider<T> | null>((p, current) => {
     if (p) {
       return p;
     }
-    if (current.context === context) {
-      return p;
-    }
-    return null;
+    return current.context === context ? current : null;
   }, null);
 }
