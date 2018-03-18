@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 import { h, render as preactRender } from "preact"; /**@jsx h */
 import { expect } from "chai";
-import * as context from "./context";
+import { createContext } from "./context";
 
 const { document } = new JSDOM(`<body><div id="scratch"></div></body>`).window;
 const anyGlobal = global as any;
@@ -13,26 +13,25 @@ const render = (comp: JSX.Element) =>
 
 describe("contex", () => {
   it("exposes a createContext function", () => {
-    expect(context.createContext).to.exist;
+    expect(createContext).to.exist;
   });
 
   describe("createContext", () => {
     it("creates an object with a Provider", () => {
-      const ctx = context.createContext();
+      const ctx = createContext("");
       expect(ctx).haveOwnProperty("Provider");
     });
 
     it("creates an object with a Consumer", () => {
-      const ctx = context.createContext();
+      const ctx = createContext("");
       expect(ctx).haveOwnProperty("Consumer");
     });
   });
 
   describe("Provider", () => {
     it("returns the given children as is", () => {
-      const ctx = context.createContext();
-      const value = {};
-      render(<ctx.Provider value={value}>Hi from provider</ctx.Provider>);
+      const ctx = createContext("");
+      render(<ctx.Provider value="a value">Hi from provider</ctx.Provider>);
 
       expect(scratch.innerHTML).to.eq("Hi from provider");
     });
@@ -40,7 +39,7 @@ describe("contex", () => {
 
   describe("Consumer", () => {
     it("returns the given children as is", () => {
-      const ctx = context.createContext();
+      const ctx = createContext("");
       render(<ctx.Consumer>Hi from consumer</ctx.Consumer>);
 
       expect(scratch.innerHTML).to.eq("Hi from consumer");

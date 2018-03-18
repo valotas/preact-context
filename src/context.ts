@@ -21,7 +21,7 @@ export interface Context<T> {
   Consumer: ComponentConstructor<ConsumerProps<T>, { value: T }>;
 }
 
-export function createContext<T>(value?: T): Context<T> {
+export function createContext<T>(value: T): Context<T> {
   const context = {
     default: value
   };
