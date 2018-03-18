@@ -78,6 +78,7 @@ export function createContext<T>(value: T): Context<T> {
       super(props, ctx);
       this.provider = findProvider<T>(ctx.providers, context);
       if (!this.provider) {
+        console.warn("Consumer used without a Provider");
         return;
       }
       const value = this.provider.push(this.updateContext);

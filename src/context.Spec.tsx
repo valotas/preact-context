@@ -13,7 +13,7 @@ anyGlobal.document = anyGlobal.document || document;
 
 const scratch = document.getElementById("scratch") as HTMLDivElement;
 const render = (comp: JSX.Element) =>
-  preactRender(comp, scratch, scratch || undefined);
+  preactRender(comp, scratch, scratch.lastChild as Element);
 
 describe("contex", () => {
   const sandbox = createSandbox();
@@ -50,21 +50,33 @@ describe("contex", () => {
   describe("Consumer", () => {
     it("returns the given children as is", () => {
       const ctx = createContext("");
-      render(<ctx.Consumer>Hi from consumer</ctx.Consumer>);
+      render(
+        <ctx.Provider value="init">
+          <ctx.Consumer>Hi from consumer</ctx.Consumer>
+        </ctx.Provider>
+      );
 
       expect(scratch.innerHTML).to.eq("Hi from consumer");
     });
 
     it("executes the given children function", () => {
       const ctx = createContext("");
-      render(<ctx.Consumer>{() => "Hi from function"}</ctx.Consumer>);
+      render(
+        <ctx.Provider value="init">
+          <ctx.Consumer>{() => "Hi from function"}</ctx.Consumer>
+        </ctx.Provider>
+      );
 
       expect(scratch.innerHTML).to.eq("Hi from function");
     });
 
     it("executes the given render function", () => {
       const ctx = createContext("");
-      render(<ctx.Consumer render={() => "Hi from render"} />);
+      render(
+        <ctx.Provider value="init">
+          <ctx.Consumer render={() => "Hi from render"} />
+        </ctx.Provider>
+      );
 
       expect(scratch.innerHTML).to.eq("Hi from render");
     });
@@ -73,17 +85,30 @@ describe("contex", () => {
       const ctx = createContext("");
       const warn = sandbox.stub(console, "warn");
       render(
-        <ctx.Consumer render={() => "Hi from render"}>
-          Hi from children
-        </ctx.Consumer>
+        <ctx.Provider value="init">
+          <ctx.Consumer render={() => "Hi from render"}>
+            Hi from children
+          </ctx.Consumer>
+        </ctx.Provider>
       );
       expect(warn).to.have.been.calledWith(
         "Both children and a render function is define. Children will be used"
       );
     });
 
-    it("has access to the default value", () => {
+    it("warns if used without a Provide", () => {
       const ctx = createContext("The Default Context");
+      const warn = sandbox.stub(console, "warn");
+      render(
+        <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
+      );
+
+      expect(warn).to.have.been.calledWith("Consumer used without a Provider");
+    });
+
+    it("has access to the default value if no provider is given", () => {
+      const ctx = createContext("The Default Context");
+      sandbox.stub(console, "warn");
       render(<ctx.Consumer render={value => `Hi from '${value}'`} />);
       expect(scratch.innerHTML).to.eq("Hi from 'The Default Context'");
     });
@@ -98,7 +123,7 @@ describe("contex", () => {
       expect(scratch.innerHTML).to.eq("Hi from 'The Provided Context'");
     });
 
-    it.skip("updates the value accordingly", () => {
+    it("updates the value accordingly", () => {
       const ctx = createContext("The Default Context");
       const componentWillReceiveProps = sandbox.spy(
         ctx.Provider.prototype,
@@ -109,13 +134,16 @@ describe("contex", () => {
           <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
+
+      // rerender
       render(
         <ctx.Provider value="The updated context">
           <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
+
       expect(scratch.innerHTML).to.eq("Hi from 'The updated context'");
-      expect(componentWillReceiveProps).to.have.been.calledWith({
+      expect(componentWillReceiveProps).to.have.been.calledWithMatch({
         value: "The updated context"
       });
     });
