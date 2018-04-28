@@ -1,14 +1,6 @@
 import { Component, ComponentConstructor } from "preact";
 
-type StateUpdater<T> = (val: T) => void;
-
-interface ContextProvider<T> {
-  push: (updater: StateUpdater<T>) => T;
-  pop: (updater: StateUpdater<T>) => void;
-  context: any;
-}
-
-export interface ProducerProps<T> {
+export interface ProviderProps<T> {
   value: T;
 }
 
@@ -17,41 +9,52 @@ export interface ConsumerProps<T> {
 }
 
 export interface Context<T> {
-  Provider: ComponentConstructor<ProducerProps<T>, {}>;
+  Provider: ComponentConstructor<ProviderProps<T>, {}>;
   Consumer: ComponentConstructor<ConsumerProps<T>, { value: T }>;
 }
 
+type StateUpdater<T> = (val: T) => void;
+
+class ContextProvider<T> {
+  value: T;
+  updaters: Array<StateUpdater<T>> = [];
+
+  constructor(defaultValue: T) {
+    this.value = defaultValue;
+  }
+
+  register(updater: StateUpdater<T>) {
+    this.updaters.push(updater);
+    updater(this.value);
+    return () => (this.updaters = this.updaters.filter(i => i !== updater));
+  }
+
+  setValue(newValue: T) {
+    this.value = newValue;
+    this.updaters.forEach(up => up(newValue));
+  }
+}
+
 export function createContext<T>(value: T): Context<T> {
-  const context = {
-    default: value
-  };
+  class Provider extends Component<ProviderProps<T>, any> {
+    private contextProvider: ContextProvider<T>;
 
-  class Provider extends Component<ProducerProps<T>, any> {
-    private subscribers: any[];
-
-    constructor(props?: ProducerProps<T>, ctx?: any) {
+    constructor(props?: ProviderProps<T>, ctx?: any) {
       super(props, ctx);
-      this.subscribers = [];
+      this.contextProvider = new ContextProvider(value);
+      if (props) {
+        this.contextProvider.value = props.value;
+      }
     }
 
     getChildContext() {
-      const provider: ContextProvider<T> = {
-        push: this.push,
-        pop: this.pop,
-        context: context
-      };
-      let providers = this.context.providers;
-      if (providers) {
-        providers.push(provider);
-      } else {
-        providers = [provider];
-      }
-      return { providers };
+      return { contextProvider: this.contextProvider };
     }
 
-    componentWillReceiveProps(nextProps: ProducerProps<T>) {
-      if (this.props.value !== nextProps.value) {
-        this.subscribers.forEach(subscriber => subscriber(nextProps.value));
+    componentDidUpdate(prevProps: ProviderProps<T>) {
+      const { value } = this.props;
+      if (value !== prevProps.value) {
+        this.contextProvider.setValue(value);
       }
     }
 
@@ -60,34 +63,26 @@ export function createContext<T>(value: T): Context<T> {
       const result = children && children[0];
       return result || null;
     }
-
-    private push = (updater: StateUpdater<T>) => {
-      this.subscribers.push(updater);
-      return this.props.value;
-    };
-
-    private pop = (updater: StateUpdater<T>) => {
-      this.subscribers = this.subscribers.filter(i => i !== updater);
-    };
   }
 
   class Consumer extends Component<ConsumerProps<T>, { value: T }> {
-    private provider: ContextProvider<T> | null;
+    private unregister?: () => void;
 
     constructor(props?: ConsumerProps<T>, ctx?: any) {
       super(props, ctx);
-      this.provider = findProvider<T>(ctx.providers, context);
-      if (!this.provider) {
+
+      const provider = ctx ? ctx.contextProvider : null;
+      if (!provider) {
         console.warn("Consumer used without a Provider");
         return;
       }
-      const value = this.provider.push(this.updateContext);
-      this.state = { value };
+      this.unregister = provider.register(this.updateContext);
+      this.state = { value: provider.value };
     }
 
     componentWillUnmount() {
-      if (this.provider) {
-        this.provider.pop(this.updateContext);
+      if (this.unregister) {
+        this.unregister();
       }
     }
 
@@ -111,19 +106,7 @@ export function createContext<T>(value: T): Context<T> {
   }
 
   return {
-    Provider: Provider as ComponentConstructor<ProducerProps<T>, {}>,
+    Provider: Provider as ComponentConstructor<ProviderProps<T>, {}>,
     Consumer: Consumer as ComponentConstructor<ConsumerProps<T>, { value: T }>
   };
-}
-
-function findProvider<T>(
-  providers: ContextProvider<T>[] = [],
-  context: any
-): ContextProvider<T> | null {
-  return providers.reduce<ContextProvider<T> | null>((p, current) => {
-    if (p) {
-      return p;
-    }
-    return current.context === context ? current : null;
-  }, null);
 }

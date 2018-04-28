@@ -1,5 +1,10 @@
 import { JSDOM } from "jsdom";
-import { h, render as preactRender } from "preact"; /**@jsx h */
+import {
+  h,
+  render as preactRender,
+  options,
+  Component
+} from "preact"; /**@jsx h */
 import { expect, use } from "chai";
 import sinonChai from "sinon-chai";
 import { createSandbox } from "sinon";
@@ -11,12 +16,15 @@ const { document } = new JSDOM(`<body><div id="scratch"></div></body>`).window;
 const anyGlobal = global as any;
 anyGlobal.document = anyGlobal.document || document;
 
-const scratch = document.getElementById("scratch") as HTMLDivElement;
-const render = (comp: JSX.Element) =>
-  preactRender(comp, scratch, scratch.lastChild as Element);
-
 describe("contex", () => {
   const sandbox = createSandbox();
+  const scratch = document.getElementById("scratch") as HTMLDivElement;
+  const render = (comp: JSX.Element) =>
+    preactRender(comp, scratch, scratch.lastChild as Element);
+
+  before(() => {
+    options.debounceRendering = (r: any) => r();
+  });
 
   afterEach(() => {
     sandbox.restore();
@@ -44,6 +52,39 @@ describe("contex", () => {
       render(<ctx.Provider value="a value">Hi from provider</ctx.Provider>);
 
       expect(scratch.innerHTML).to.eq("Hi from provider");
+    });
+
+    describe("nested Providers", () => {
+      it("passes the updated value to the sub consumer", () => {
+        const ctx = createContext(10);
+
+        render(
+          <ctx.Provider value={12}>
+            <ctx.Consumer>
+              {(value: number) => (
+                <div>
+                  <span className="result">{value}</span>
+                  <ctx.Provider value={value * 10}>
+                    <ctx.Consumer>
+                      {(value: number) => (
+                        <span className="nested-result">{value}</span>
+                      )}
+                    </ctx.Consumer>
+                  </ctx.Provider>
+                </div>
+              )}
+            </ctx.Consumer>
+          </ctx.Provider>
+        );
+
+        const result = document.querySelector(".result");
+        expect(result).not.to.be.null;
+        expect(result!.innerHTML).to.eq("12");
+
+        const nested = document.querySelector(".nested-result");
+        expect(nested).not.to.be.null;
+        expect(nested!.innerHTML).to.eq("120");
+      });
     });
   });
 
@@ -125,9 +166,9 @@ describe("contex", () => {
 
     it("updates the value accordingly", () => {
       const ctx = createContext("The Default Context");
-      const componentWillReceiveProps = sandbox.spy(
+      const componentDidUpdate = sandbox.spy(
         ctx.Provider.prototype,
-        "componentWillReceiveProps"
+        "componentDidUpdate"
       );
       render(
         <ctx.Provider value="The Provided Context">
@@ -143,9 +184,44 @@ describe("contex", () => {
       );
 
       expect(scratch.innerHTML).to.eq("Hi from 'The updated context'");
-      expect(componentWillReceiveProps).to.have.been.calledWithMatch({
-        value: "The updated context"
-      });
+      expect(componentDidUpdate).to.have.been.calledOnce;
+    });
+
+    it("updates the Consumer's value even if indirection is not rendered", () => {
+      class Indirection extends Component<any, {}> {
+        shouldComponentUpdate() {
+          return false;
+        }
+        render() {
+          return this.props.children[0];
+        }
+      }
+
+      const ctx = createContext("The Default Context");
+
+      render(
+        <ctx.Provider value="The Provided Context">
+          <Indirection>
+            <ctx.Consumer>
+              {(value: string) => `Hi from '${value}'`}
+            </ctx.Consumer>
+          </Indirection>
+        </ctx.Provider>
+      );
+      expect(scratch.innerHTML).to.eq("Hi from 'The Provided Context'");
+
+      // rerender with updated value
+      render(
+        <ctx.Provider value="The Updated Context">
+          <Indirection>
+            <ctx.Consumer>
+              {(value: string) => `Hi from '${value}'`}
+            </ctx.Consumer>
+          </Indirection>
+        </ctx.Provider>
+      );
+
+      expect(scratch.innerHTML).to.eq("Hi from 'The Updated Context'");
     });
   });
 });
