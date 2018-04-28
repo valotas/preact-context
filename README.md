@@ -1,4 +1,4 @@
-# React's new Context Api for preact
+# React's new Context Api for preact [![Build Status](https://travis-ci.org/valotas/preact-context.svg?branch=master)](https://travis-ci.org/valotas/preact-context)
 
 A typescript implementation of React's new context API as
 [described here][preact pr]
