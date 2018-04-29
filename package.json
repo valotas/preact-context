@@ -18,6 +18,14 @@
     "email": "valotas@gmail.com"
   },
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/valotas/preact-context.git"
+  },
+  "bugs": {
+    "url": "https://github.com/valotas/preact-context/issues"
+  },
+  "homepage": "https://github.com/valotas/preact-context",
   "peerDependencies": {
     "preact": "^8.2.7"
   },
