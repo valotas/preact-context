@@ -12,17 +12,26 @@ import { createContext } from "./context";
 
 use(sinonChai);
 
-const { document } = new JSDOM(`<body><div id="scratch"></div></body>`).window;
-const anyGlobal = global as any;
-anyGlobal.document = anyGlobal.document || document;
-
 describe("contex", () => {
   const sandbox = createSandbox();
-  const scratch = document.getElementById("scratch") as HTMLDivElement;
   const render = (comp: JSX.Element) =>
     preactRender(comp, scratch, scratch.lastChild as Element);
+  let scratch: HTMLDivElement;
 
   before(() => {
+    const anyGlobal = global as any;
+    let document = anyGlobal.document;
+    if (!document) {
+      // we are not running in a browser, create a Jsdom document
+      document = anyGlobal.document = new JSDOM(
+        `<body></body>`
+      ).window.document;
+    }
+    scratch = document.createElement("div");
+    document.body.appendChild(scratch);
+  });
+
+  beforeEach(() => {
     options.debounceRendering = (r: any) => r();
   });
 
