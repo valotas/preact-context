@@ -1,6 +1,6 @@
 {
   "name": "preact-context",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "React's new Context Api for preact",
   "main": "./dist/context.js",
   "types": "./dist/context.d.ts",
@@ -32,7 +32,10 @@
   "peerDependencies": {
     "preact": "^8.2.7"
   },
-  "keywords": ["preact", "context"],
+  "keywords": [
+    "preact",
+    "context"
+  ],
   "devDependencies": {
     "@types/jsdom": "^11.0.4",
     "@types/mocha": "^2.2.48",
