@@ -91,7 +91,7 @@ export function createContext<T>(value: T): Context<T> {
       const r = (children && children[0]) || render;
       if (render && render !== r) {
         console.warn(
-          "Both children and a render function is define. Children will be used"
+          "Both children and a render function are defined. Children will be used"
         );
       }
       if (typeof r === "function") {

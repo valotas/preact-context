@@ -133,7 +133,7 @@ describe("contex", () => {
         </ctx.Provider>
       );
       expect(warn).to.have.been.calledWith(
-        "Both children and a render function is define. Children will be used"
+        "Both children and a render function are defined. Children will be used"
       );
     });
 
