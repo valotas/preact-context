@@ -36,7 +36,7 @@ can be used in order to update the value of a context:
 <Theme.Provider value="sunny">
 ```
 
-will change "dark" the "sunny" and notify all it's consumers of the change.
+will change "dark" to "sunny" and notify all it's consumers of the change.
 
 # Development
 
