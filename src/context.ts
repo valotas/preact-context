@@ -25,7 +25,6 @@ class ContextProvider<T> {
 
   register(updater: StateUpdater<T>) {
     this.updaters.push(updater);
-    updater(this.value);
     return () => (this.updaters = this.updaters.filter(i => i !== updater));
   }
 
