@@ -1,6 +1,6 @@
 {
   "name": "preact-context",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "React's new Context Api for preact",
   "main": "./dist/context.js",
   "types": "./dist/context.d.ts",
