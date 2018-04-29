@@ -6,51 +6,16 @@ import {
   Component
 } from "preact"; /**@jsx h */
 import expect from "expect";
-import { createSandbox } from "sinon";
+import * as sinon from "sinon";
 import { createContext } from "./context";
 
 const Empty = () => null;
 
 describe("contex", () => {
-  const sandbox = createSandbox();
+  const sandbox = sinon.createSandbox();
   const render = (comp: JSX.Element) =>
     preactRender(comp, scratch, scratch.lastChild as Element);
   let scratch: HTMLDivElement;
-
-  expect.extend({
-    toHaveBeenCalled(stub: sinon.SinonSpy | sinon.SinonStub) {
-      const pass = stub.called;
-      const utils = this.utils as any;
-      return {
-        message: () =>
-          pass
-            ? `Expected stub not to have been called but is has.\n\nLast call:\n ${utils.printReceived(
-                stub.lastCall.toString()
-              )}`
-            : "Expected stub to have been called",
-        pass
-      };
-    },
-    toHaveBeenCalledWith(
-      stub: sinon.SinonSpy | sinon.SinonStub,
-      expectation: any
-    ) {
-      const pass = stub.calledWith(expectation);
-      return {
-        message: () =>
-          pass
-            ? `Expected stub not to have been called with\n\n${this.utils.printExpected(
-                expectation
-              )}`
-            : `Expected stub to have been called with\n\n${this.utils.printExpected(
-                expectation
-              )}\n\nBut it case called with:\n${this.utils.printReceived(
-                stub.lastCall.args
-              )}`,
-        pass
-      };
-    }
-  });
 
   before(() => {
     const anyGlobal = global as any;
@@ -176,7 +141,9 @@ describe("contex", () => {
           </ctx.Consumer>
         </ctx.Provider>
       );
-      expect(warn).toHaveBeenCalledWith(
+
+      sinon.assert.calledWith(
+        warn,
         "Both children and a render function are defined. Children will be used"
       );
     });
@@ -188,7 +155,7 @@ describe("contex", () => {
         <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
       );
 
-      expect(warn).toHaveBeenCalledWith("Consumer used without a Provider");
+      sinon.assert.calledWith(warn, "Consumer used without a Provider");
     });
 
     it("has access to the default value if no provider is given", () => {
@@ -229,7 +196,7 @@ describe("contex", () => {
       );
 
       expect(scratch.innerHTML).toEqual("result: '3'");
-      expect(componentDidUpdate).toHaveBeenCalled(); // once
+      sinon.assert.calledOnce(componentDidUpdate);
     });
 
     /* it("does not update if value does not change", () => {
