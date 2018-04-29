@@ -1,6 +1,15 @@
+dist: trusty
+env:
+  - MOZ_HEADLESS=1
+addons:
+  firefox: latest
+  chrome: stable
 language: node_js
 node_js:
   - "8"
 cache:
   directories:
     - "node_modules"
+branches:
+  only:
+    - master
