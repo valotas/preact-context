@@ -1,8 +1,9 @@
 {
   "name": "preact-context",
   "version": "0.0.0",
-  "description": "React New Context Api for preact",
-  "main": "index.js",
+  "description": "React's new Context Api for preact",
+  "main": "./dist/context.js",
+  "types": "./dist/context.d.ts",
   "scripts": {
     "clean": "rimraf dist",
     "build": "tsc -p .",
@@ -12,7 +13,11 @@
     "watch:test": "npm run test -- --watch --reporter dot",
     "watch": "npm run prepare && npm-run-all --parallel watch:*"
   },
-  "author": "",
+  "author": {
+    "name": "Georgios Valotasios",
+    "email": "valotas@gmail.com"
+  },
+  "license": "Apache-2.0",
   "peerDependencies": {
     "preact": "^8.2.7"
   },

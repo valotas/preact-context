@@ -1,0 +1,4 @@
+src/
+dist/**/*.Spec.*
+.travis.yml
+tsconfig.json
