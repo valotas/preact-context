@@ -5,18 +5,52 @@ import {
   options,
   Component
 } from "preact"; /**@jsx h */
-import { expect, use } from "chai";
-import sinonChai from "sinon-chai";
+import expect from "expect";
 import { createSandbox } from "sinon";
 import { createContext } from "./context";
 
-use(sinonChai);
+const Empty = () => null;
 
 describe("contex", () => {
   const sandbox = createSandbox();
   const render = (comp: JSX.Element) =>
     preactRender(comp, scratch, scratch.lastChild as Element);
   let scratch: HTMLDivElement;
+
+  expect.extend({
+    toHaveBeenCalled(stub: sinon.SinonSpy | sinon.SinonStub) {
+      const pass = stub.called;
+      const utils = this.utils as any;
+      return {
+        message: () =>
+          pass
+            ? `Expected stub not to have been called but is has.\n\nLast call:\n ${utils.printReceived(
+                stub.lastCall.toString()
+              )}`
+            : "Expected stub to have been called",
+        pass
+      };
+    },
+    toHaveBeenCalledWith(
+      stub: sinon.SinonSpy | sinon.SinonStub,
+      expectation: any
+    ) {
+      const pass = stub.calledWith(expectation);
+      return {
+        message: () =>
+          pass
+            ? `Expected stub not to have been called with\n\n${this.utils.printExpected(
+                expectation
+              )}`
+            : `Expected stub to have been called with\n\n${this.utils.printExpected(
+                expectation
+              )}\n\nBut it case called with:\n${this.utils.printReceived(
+                stub.lastCall.args
+              )}`,
+        pass
+      };
+    }
+  });
 
   before(() => {
     const anyGlobal = global as any;
@@ -36,22 +70,23 @@ describe("contex", () => {
   });
 
   afterEach(() => {
+    render(<Empty />);
     sandbox.restore();
   });
 
   it("exposes a createContext function", () => {
-    expect(createContext).to.exist;
+    expect(createContext).toBeDefined();
   });
 
   describe("createContext", () => {
     it("creates an object with a Provider", () => {
       const ctx = createContext("");
-      expect(ctx).haveOwnProperty("Provider");
+      expect(ctx).toHaveProperty("Provider");
     });
 
     it("creates an object with a Consumer", () => {
       const ctx = createContext("");
-      expect(ctx).haveOwnProperty("Consumer");
+      expect(ctx).toHaveProperty("Consumer");
     });
   });
 
@@ -60,7 +95,7 @@ describe("contex", () => {
       const ctx = createContext("");
       render(<ctx.Provider value="a value">Hi from provider</ctx.Provider>);
 
-      expect(scratch.innerHTML).to.eq("Hi from provider");
+      expect(scratch.innerHTML).toEqual("Hi from provider");
     });
 
     describe("nested Providers", () => {
@@ -87,12 +122,12 @@ describe("contex", () => {
         );
 
         const result = document.querySelector(".result");
-        expect(result).not.to.be.null;
-        expect(result!.innerHTML).to.eq("12");
+        expect(result).not.toBeNull();
+        expect(result!.innerHTML).toEqual("12");
 
         const nested = document.querySelector(".nested-result");
-        expect(nested).not.to.be.null;
-        expect(nested!.innerHTML).to.eq("120");
+        expect(nested).not.toBeNull();
+        expect(nested!.innerHTML).toEqual("120");
       });
     });
   });
@@ -106,7 +141,7 @@ describe("contex", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.innerHTML).to.eq("Hi from consumer");
+      expect(scratch.innerHTML).toEqual("Hi from consumer");
     });
 
     it("executes the given children function", () => {
@@ -117,7 +152,7 @@ describe("contex", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.innerHTML).to.eq("Hi from function");
+      expect(scratch.innerHTML).toEqual("Hi from function");
     });
 
     it("executes the given render function", () => {
@@ -128,7 +163,7 @@ describe("contex", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.innerHTML).to.eq("Hi from render");
+      expect(scratch.innerHTML).toEqual("Hi from render");
     });
 
     it("warns if both a render and children are given", () => {
@@ -141,7 +176,7 @@ describe("contex", () => {
           </ctx.Consumer>
         </ctx.Provider>
       );
-      expect(warn).to.have.been.calledWith(
+      expect(warn).toHaveBeenCalledWith(
         "Both children and a render function are defined. Children will be used"
       );
     });
@@ -153,14 +188,14 @@ describe("contex", () => {
         <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
       );
 
-      expect(warn).to.have.been.calledWith("Consumer used without a Provider");
+      expect(warn).toHaveBeenCalledWith("Consumer used without a Provider");
     });
 
     it("has access to the default value if no provider is given", () => {
       const ctx = createContext("The Default Context");
       sandbox.stub(console, "warn");
       render(<ctx.Consumer render={value => `Hi from '${value}'`} />);
-      expect(scratch.innerHTML).to.eq("Hi from 'The Default Context'");
+      expect(scratch.innerHTML).toEqual("Hi from 'The Default Context'");
     });
 
     it("has access to the provided value", () => {
@@ -170,31 +205,58 @@ describe("contex", () => {
           <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
-      expect(scratch.innerHTML).to.eq("Hi from 'The Provided Context'");
+      expect(scratch.innerHTML).toEqual("Hi from 'The Provided Context'");
     });
 
     it("updates the value accordingly", () => {
-      const ctx = createContext("The Default Context");
+      const ctx = createContext(1);
       const componentDidUpdate = sandbox.spy(
         ctx.Provider.prototype,
         "componentDidUpdate"
       );
       render(
-        <ctx.Provider value="The Provided Context">
-          <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
+        <ctx.Provider value={2}>
+          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
+      expect(scratch.innerHTML).toEqual("result: '2'");
 
       // rerender
       render(
-        <ctx.Provider value="The updated context">
-          <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
+        <ctx.Provider value={3}>
+          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
 
-      expect(scratch.innerHTML).to.eq("Hi from 'The updated context'");
-      expect(componentDidUpdate).to.have.been.calledOnce;
+      expect(scratch.innerHTML).toEqual("result: '3'");
+      expect(componentDidUpdate).toHaveBeenCalled(); // once
     });
+
+    /* it("does not update if value does not change", () => {
+      console.log("aa", scratch.innerHTML);
+
+      const ctx = createContext(1);
+      const componentDidUpdate = sandbox.spy(
+        ctx.Provider.prototype,
+        "componentDidUpdate"
+      );
+      render(
+        <ctx.Provider value={2}>
+          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
+        </ctx.Provider>
+      );
+      expect(scratch.innerHTML).toEqual("result: '2'");
+
+      // rerender
+      render(
+        <ctx.Provider value={2}>
+          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
+        </ctx.Provider>
+      );
+
+      expect(scratch.innerHTML).toEqual("result: '2'");
+      expect(componentDidUpdate).not.toHaveBeenCalled();
+    }); */
 
     it("updates the Consumer's value even if indirection is not rendered", () => {
       class Indirection extends Component<any, {}> {
@@ -217,7 +279,7 @@ describe("contex", () => {
           </Indirection>
         </ctx.Provider>
       );
-      expect(scratch.innerHTML).to.eq("Hi from 'The Provided Context'");
+      expect(scratch.innerHTML).toEqual("Hi from 'The Provided Context'");
 
       // rerender with updated value
       render(
@@ -230,7 +292,7 @@ describe("contex", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.innerHTML).to.eq("Hi from 'The Updated Context'");
+      expect(scratch.innerHTML).toEqual("Hi from 'The Updated Context'");
     });
   });
 });
