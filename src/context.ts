@@ -15,46 +15,52 @@ export interface Context<T> {
 
 type StateUpdater<T> = (val: T) => void;
 
+function noop() {}
+
 class ContextProvider<T> {
   value: T;
-  updaters: Array<StateUpdater<T>> = [];
+  private updaters: Array<StateUpdater<T>> = [];
 
-  constructor(defaultValue: T) {
-    this.value = defaultValue;
+  constructor(initialValue: T) {
+    this.value = initialValue;
   }
 
   register(updater: StateUpdater<T>) {
     this.updaters.push(updater);
+    updater(this.value);
     return () => (this.updaters = this.updaters.filter(i => i !== updater));
   }
 
   setValue(newValue: T) {
+    if (newValue === this.value) {
+      return;
+    }
     this.value = newValue;
     this.updaters.forEach(up => up(newValue));
   }
 }
 
+let ids = 0;
+
 export function createContext<T>(value: T): Context<T> {
+  const key = `_ctxProvider-${ids++}`;
+
   class Provider extends Component<ProviderProps<T>, any> {
     private contextProvider: ContextProvider<T>;
 
-    constructor(props?: ProviderProps<T>, ctx?: any) {
-      super(props, ctx);
-      this.contextProvider = new ContextProvider(value);
-      if (props) {
-        this.contextProvider.value = props.value;
-      }
+    constructor(props: ProviderProps<T>) {
+      super(props);
+      this.contextProvider = new ContextProvider(props.value);
     }
 
     getChildContext() {
-      return { contextProvider: this.contextProvider };
+      return {
+        [key]: this.contextProvider
+      };
     }
 
-    componentDidUpdate(prevProps: ProviderProps<T>) {
-      const { value } = this.props;
-      if (value !== prevProps.value) {
-        this.contextProvider.setValue(value);
-      }
+    componentDidUpdate() {
+      this.contextProvider.setValue(this.props.value);
     }
 
     render() {
@@ -65,24 +71,29 @@ export function createContext<T>(value: T): Context<T> {
   }
 
   class Consumer extends Component<ConsumerProps<T>, { value: T }> {
-    private unregister?: () => void;
+    private unregister: () => void;
 
     constructor(props?: ConsumerProps<T>, ctx?: any) {
       super(props, ctx);
+      this.unregister = noop;
+      this.state = { value };
+    }
 
-      const provider = ctx ? ctx.contextProvider : null;
-      if (!provider) {
-        console.warn("Consumer used without a Provider");
-        return;
-      }
-      this.unregister = provider.register(this.updateContext);
-      this.state = { value: provider.value };
+    componentDidMount() {
+      this.register();
     }
 
     componentWillUnmount() {
-      if (this.unregister) {
-        this.unregister();
+      this.unregister();
+    }
+
+    componentDidUpdate(_: any, __: any, prevCtx: any) {
+      if (prevCtx[key] === this.context[key]) {
+        return;
       }
+      this.unregister();
+      this.unregister = noop;
+      this.register();
     }
 
     render() {
@@ -99,9 +110,16 @@ export function createContext<T>(value: T): Context<T> {
       return r;
     }
 
-    private updateContext = (value: T) => {
-      this.setState({ value });
-    };
+    private updateContext = (value: T) => this.setState({ value });
+
+    private register() {
+      const provider = this.context[key];
+      if (provider) {
+        this.unregister = provider.register(this.updateContext);
+      } else {
+        console.warn("Consumer used without a Provider");
+      }
+    }
   }
 
   return {

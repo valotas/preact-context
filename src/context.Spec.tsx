@@ -11,7 +11,7 @@ import { createContext } from "./context";
 
 const Empty = () => null;
 
-describe("contex", () => {
+describe("context", () => {
   const sandbox = sinon.createSandbox();
   const render = (comp: JSX.Element) =>
     preactRender(comp, scratch, scratch.lastChild as Element);
@@ -61,39 +61,6 @@ describe("contex", () => {
       render(<ctx.Provider value="a value">Hi from provider</ctx.Provider>);
 
       expect(scratch.innerHTML).toEqual("Hi from provider");
-    });
-
-    describe("nested Providers", () => {
-      it("passes the updated value to the sub consumer", () => {
-        const ctx = createContext(10);
-
-        render(
-          <ctx.Provider value={12}>
-            <ctx.Consumer>
-              {(value: number) => (
-                <div>
-                  <span className="result">{value}</span>
-                  <ctx.Provider value={value * 10}>
-                    <ctx.Consumer>
-                      {(value: number) => (
-                        <span className="nested-result">{value}</span>
-                      )}
-                    </ctx.Consumer>
-                  </ctx.Provider>
-                </div>
-              )}
-            </ctx.Consumer>
-          </ctx.Provider>
-        );
-
-        const result = document.querySelector(".result");
-        expect(result).not.toBeNull();
-        expect(result!.innerHTML).toEqual("12");
-
-        const nested = document.querySelector(".nested-result");
-        expect(nested).not.toBeNull();
-        expect(nested!.innerHTML).toEqual("120");
-      });
     });
   });
 
@@ -199,32 +166,6 @@ describe("contex", () => {
       sinon.assert.calledOnce(componentDidUpdate);
     });
 
-    /* it("does not update if value does not change", () => {
-      console.log("aa", scratch.innerHTML);
-
-      const ctx = createContext(1);
-      const componentDidUpdate = sandbox.spy(
-        ctx.Provider.prototype,
-        "componentDidUpdate"
-      );
-      render(
-        <ctx.Provider value={2}>
-          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
-        </ctx.Provider>
-      );
-      expect(scratch.innerHTML).toEqual("result: '2'");
-
-      // rerender
-      render(
-        <ctx.Provider value={2}>
-          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
-        </ctx.Provider>
-      );
-
-      expect(scratch.innerHTML).toEqual("result: '2'");
-      expect(componentDidUpdate).not.toHaveBeenCalled();
-    }); */
-
     it("updates the Consumer's value even if indirection is not rendered", () => {
       class Indirection extends Component<any, {}> {
         shouldComponentUpdate() {
@@ -260,6 +201,118 @@ describe("contex", () => {
       );
 
       expect(scratch.innerHTML).toEqual("Hi from 'The Updated Context'");
+    });
+  });
+
+  describe("nested contextes", () => {
+    it("Provider passes the updated value to the sub consumer", () => {
+      const ctx = createContext(10);
+
+      render(
+        <ctx.Provider value={12}>
+          <ctx.Consumer>
+            {(value: number) => (
+              <div>
+                <span className="result">{value}</span>
+                <ctx.Provider value={value * 10}>
+                  <ctx.Consumer>
+                    {(value: number) => (
+                      <span className="nested-result">{value}</span>
+                    )}
+                  </ctx.Consumer>
+                </ctx.Provider>
+              </div>
+            )}
+          </ctx.Consumer>
+        </ctx.Provider>
+      );
+
+      const result = document.querySelector(".result");
+      expect(result).not.toBeNull();
+      expect(result!.innerHTML).toEqual("12");
+
+      const nested = document.querySelector(".nested-result");
+      expect(nested).not.toBeNull();
+      expect(nested!.innerHTML).toEqual("120");
+    });
+
+    it("each context can consume other contextes", () => {
+      const numContext = createContext(10);
+      const textContext = createContext("hi");
+
+      render(
+        <numContext.Provider value={12}>
+          <numContext.Consumer>
+            {(num: number) => (
+              <div>
+                <span className="result">{num}</span>
+                <textContext.Provider value={`consumed num: ${num}`}>
+                  <div>
+                    <span className="nested-number">{num}</span>
+                    <textContext.Consumer>
+                      {(text: string) => (
+                        <span className="nested-result">{text}</span>
+                      )}
+                    </textContext.Consumer>
+                  </div>
+                </textContext.Provider>
+              </div>
+            )}
+          </numContext.Consumer>
+        </numContext.Provider>
+      );
+
+      const result = document.querySelector(".result");
+      expect(result).not.toBeNull();
+      expect(result!.innerHTML).toEqual("12");
+
+      const num = document.querySelector(".nested-number");
+      expect(num).not.toBeNull();
+      expect(num!.innerHTML).toEqual("12");
+
+      const nested = document.querySelector(".nested-result");
+      expect(nested).not.toBeNull();
+      expect(nested!.innerHTML).toEqual("consumed num: 12");
+    });
+
+    it("each context provides the value to it's consumer", () => {
+      const numContext = createContext(10);
+      const textContext = createContext("hi");
+      sandbox.stub(console, "warn");
+
+      render(
+        <numContext.Provider value={12}>
+          <numContext.Consumer>
+            {(value: number) => (
+              <div>
+                <span className="result">{value}</span>
+                <numContext.Consumer>
+                  {(value: number) => (
+                    <span className="number-result">{value}</span>
+                  )}
+                </numContext.Consumer>
+                <textContext.Consumer>
+                  {(value: string) => (
+                    <span className="text-result">{value}</span>
+                  )}
+                </textContext.Consumer>
+              </div>
+            )}
+          </numContext.Consumer>
+        </numContext.Provider>
+      );
+
+      const result = document.querySelector(".result");
+      expect(result).not.toBeNull();
+      expect(result!.innerHTML).toEqual("12");
+
+      const number = document.querySelector(".number-result");
+      expect(number).not.toBeNull();
+      expect(number!.innerHTML).toEqual("12");
+
+      const text = document.querySelector(".text-result");
+      expect(text).not.toBeNull();
+      expect(text!.innerHTML).toEqual("hi");
     });
   });
 });
