@@ -11,9 +11,10 @@
     "watch:build": "npm run build -- -w",
     "test:browser": "karma start",
     "test:jsdom": "mocha ./dist/**/*.Spec.js",
-    "test": "npm-run-all --parallel test:*",
+    "test": "npm-run-all test:*",
     "watch:test": "npm run test:jsdom -- --watch --reporter dot",
-    "watch": "npm run prepare && npm-run-all --parallel watch:*"
+    "watch": "npm run prepare && npm-run-all --parallel watch:*",
+    "preversion": "npm run test"
   },
   "author": {
     "name": "Georgios Valotasios",
@@ -31,10 +32,7 @@
   "peerDependencies": {
     "preact": "^8.2.7"
   },
-  "keywords": [
-    "preact",
-    "context"
-  ],
+  "keywords": ["preact", "context"],
   "devDependencies": {
     "@types/jsdom": "^11.0.4",
     "@types/mocha": "^2.2.48",
