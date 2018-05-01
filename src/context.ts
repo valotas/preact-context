@@ -1,4 +1,4 @@
-import { Component, ComponentConstructor } from "preact";
+import { h, Component, ComponentConstructor, RenderableProps } from "preact";
 
 export interface ProviderProps<T> {
   value: T;
@@ -43,7 +43,7 @@ class ContextProvider<T> {
 let ids = 0;
 
 export function createContext<T>(value: T): Context<T> {
-  const key = `_ctxProvider-${ids++}`;
+  const key = `_preactContextProvider-${ids++}`;
 
   class Provider extends Component<ProviderProps<T>, any> {
     private contextProvider: ContextProvider<T>;
@@ -59,14 +59,24 @@ export function createContext<T>(value: T): Context<T> {
       };
     }
 
+    shouldComponentUpdate(nextProps: RenderableProps<ProviderProps<T>>) {
+      const { value, children } = this.props;
+      return value !== nextProps.value || children !== nextProps.children;
+    }
+
     componentDidUpdate() {
       this.contextProvider.setValue(this.props.value);
     }
 
     render() {
       const { children } = this.props;
+      if (children && children.length > 1) {
+        // preact does not support fragments,
+        // therefore we wrap the children in a span
+        return h("span", null, children);
+      }
       const result = children && children[0];
-      return result || null;
+      return (result || null) as JSX.Element;
     }
   }
 

@@ -3,7 +3,8 @@ import {
   h,
   render as preactRender,
   options,
-  Component
+  Component,
+  RenderableProps
 } from "preact"; /**@jsx h */
 import expect from "expect";
 import * as sinon from "sinon";
@@ -61,6 +62,42 @@ describe("context", () => {
       render(<ctx.Provider value="a value">Hi from provider</ctx.Provider>);
 
       expect(scratch.innerHTML).toEqual("Hi from provider");
+    });
+
+    it("updates the value accordingly", () => {
+      const ctx = createContext(1);
+      const componentDidUpdate = sandbox.spy(
+        ctx.Provider.prototype,
+        "componentDidUpdate"
+      );
+      render(
+        <ctx.Provider value={2}>
+          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
+        </ctx.Provider>
+      );
+      expect(scratch.innerHTML).toEqual("result: '2'");
+
+      // rerender
+      render(
+        <ctx.Provider value={3}>
+          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
+        </ctx.Provider>
+      );
+
+      expect(scratch.innerHTML).toEqual("result: '3'");
+      sinon.assert.calledOnce(componentDidUpdate);
+    });
+
+    it("accepts many children by wrapping them into a span", () => {
+      const ctx = createContext(1);
+
+      render(
+        <ctx.Provider value={2}>
+          <div />
+          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
+        </ctx.Provider>
+      );
+      expect(scratch.innerHTML).toEqual("<span><div></div>result: '2'</span>");
     });
   });
 
@@ -140,30 +177,6 @@ describe("context", () => {
         </ctx.Provider>
       );
       expect(scratch.innerHTML).toEqual("Hi from 'The Provided Context'");
-    });
-
-    it("updates the value accordingly", () => {
-      const ctx = createContext(1);
-      const componentDidUpdate = sandbox.spy(
-        ctx.Provider.prototype,
-        "componentDidUpdate"
-      );
-      render(
-        <ctx.Provider value={2}>
-          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
-        </ctx.Provider>
-      );
-      expect(scratch.innerHTML).toEqual("result: '2'");
-
-      // rerender
-      render(
-        <ctx.Provider value={3}>
-          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
-        </ctx.Provider>
-      );
-
-      expect(scratch.innerHTML).toEqual("result: '3'");
-      sinon.assert.calledOnce(componentDidUpdate);
     });
 
     it("updates the Consumer's value even if indirection is not rendered", () => {
@@ -313,6 +326,73 @@ describe("context", () => {
       const text = document.querySelector(".text-result");
       expect(text).not.toBeNull();
       expect(text!.innerHTML).toEqual("hi");
+    });
+
+    it("different branches", () => {
+      const numContext = createContext(10);
+      const textContext = createContext("hi");
+      sandbox.stub(console, "warn");
+
+      function TextConsumer(props: RenderableProps<any>) {
+        return (
+          <textContext.Consumer>
+            {(value: string) => (
+              <div className={`text-consumer c${props.id}`}>
+                <span class="value">{value}</span>
+                {props.children}
+              </div>
+            )}
+          </textContext.Consumer>
+        );
+      }
+
+      function NumberConsumer(props: RenderableProps<any>) {
+        return (
+          <numContext.Consumer>
+            {(value: string) => (
+              <div className={`num-consumer c${props.id}`}>
+                <span class="value">{value}</span>
+                {props.children}
+              </div>
+            )}
+          </numContext.Consumer>
+        );
+      }
+
+      render(
+        <numContext.Provider value={12}>
+          <TextConsumer id="1" />
+          <NumberConsumer id="2" />
+          <textContext.Provider value="twelve">
+            <TextConsumer id="3">
+              <NumberConsumer id="4" />
+              <numContext.Provider value={120}>
+                <TextConsumer id="5" />
+                <NumberConsumer id="6" />
+              </numContext.Provider>
+            </TextConsumer>
+            <NumberConsumer id="6">
+              <TextConsumer />
+            </NumberConsumer>
+          </textContext.Provider>
+        </numContext.Provider>
+      );
+
+      expect(document.querySelector(".c1")).not.toBeNull();
+      expect(document.querySelector(".c1 .value")!.innerHTML).toEqual("hi");
+
+      expect(document.querySelector(".c2")).not.toBeNull();
+      expect(document.querySelector(".c2 .value")!.innerHTML).toEqual("12");
+
+      expect(document.querySelector(".c3 .c5")).not.toBeNull();
+      expect(document.querySelector(".c3 .c5 .value")!.innerHTML).toEqual(
+        "twelve"
+      );
+
+      expect(document.querySelector(".c3 .c6")).not.toBeNull();
+      expect(document.querySelector(".c3 .c6 .value")!.innerHTML).toEqual(
+        "120"
+      );
     });
   });
 });
