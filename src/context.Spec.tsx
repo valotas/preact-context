@@ -102,17 +102,6 @@ describe("context", () => {
   });
 
   describe("Consumer", () => {
-    it("returns the given children as is", () => {
-      const ctx = createContext("");
-      render(
-        <ctx.Provider value="init">
-          <ctx.Consumer>Hi from consumer</ctx.Consumer>
-        </ctx.Provider>
-      );
-
-      expect(scratch.innerHTML).toEqual("Hi from consumer");
-    });
-
     it("executes the given children function", () => {
       const ctx = createContext("");
       render(
@@ -214,6 +203,27 @@ describe("context", () => {
       );
 
       expect(scratch.innerHTML).toEqual("Hi from 'The Updated Context'");
+    });
+
+    it("warns if it is given a children other than a function", () => {
+      const ctx = createContext("The Default Context");
+      const warn = sandbox.stub(console, "warn");
+
+      render(<ctx.Consumer>Nothing</ctx.Consumer>);
+
+      sinon.assert.calledWith(
+        warn,
+        "Consumer is expecting a function as one and only child but didn't find any"
+      );
+    });
+
+    it("Renders nothing if no function child is given", () => {
+      const ctx = createContext("The Default Context");
+      sandbox.stub(console, "warn");
+
+      render(<ctx.Consumer>Nothing</ctx.Consumer>);
+
+      expect(scratch.innerHTML).toEqual("");
     });
   });
 

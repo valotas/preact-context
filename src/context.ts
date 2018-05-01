@@ -117,7 +117,9 @@ export function createContext<T>(value: T): Context<T> {
       if (typeof r === "function") {
         return r(this.state.value || value);
       }
-      return r;
+      console.warn(
+        "Consumer is expecting a function as one and only child but didn't find any"
+      );
     }
 
     private updateContext = (value: T) => this.setState({ value });
