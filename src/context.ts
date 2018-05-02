@@ -1,4 +1,4 @@
-import { h, Component, ComponentConstructor, RenderableProps } from "preact";
+import { h, Component, ComponentConstructor } from "preact";
 
 export interface ProviderProps<T> {
   value: T;
@@ -57,11 +57,6 @@ export function createContext<T>(value: T): Context<T> {
       return {
         [key]: this.contextProvider
       };
-    }
-
-    shouldComponentUpdate(nextProps: RenderableProps<ProviderProps<T>>) {
-      const { value, children } = this.props;
-      return value !== nextProps.value || children !== nextProps.children;
     }
 
     componentDidUpdate() {
