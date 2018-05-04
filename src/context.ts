@@ -17,49 +17,55 @@ export interface Context<T> {
 
 type StateUpdater<T> = (val: T) => void;
 
-function noop() {}
-
-function sameRenderFunction<T>(
-  props: RenderableProps<ConsumerProps<T>>,
-  nextProps: RenderableProps<ConsumerProps<T>>
-) {
-  if (props.render !== nextProps.render) {
-    return false;
-  }
-
-  const children = props.children || [];
-  const nextChildren = nextProps.children || [];
-  if (children.length !== nextChildren.length) {
-    return false;
-  }
-  if (children[0] !== nextChildren[0]) {
-    return false;
-  }
-  return true;
+function getRenderer<T>(props: RenderableProps<ConsumerProps<T>>) {
+  const { children, render } = props;
+  return (children && children[0]) || render;
 }
 
-class ContextProvider<T> {
-  value: T;
-  private updaters: Array<StateUpdater<T>> = [];
+interface IContextProvider<T> {
+  register: (updater: StateUpdater<T>) => void;
+  unregister: (updater: StateUpdater<T>) => void;
+  setValue: (value: T) => void;
+}
+
+class ContextProvider<T> implements IContextProvider<T> {
+  private _value: T;
+  private _updaters: Array<StateUpdater<T>> = [];
 
   constructor(initialValue: T) {
-    this.value = initialValue;
+    this._value = initialValue;
   }
 
   register(updater: StateUpdater<T>) {
-    this.updaters.push(updater);
-    updater(this.value);
-    return () => (this.updaters = this.updaters.filter(i => i !== updater));
+    this._updaters.push(updater);
+    updater(this._value);
+    return () => this.unregister(updater);
+  }
+
+  unregister(updater: StateUpdater<T>) {
+    this._updaters = this._updaters.filter(i => i !== updater);
   }
 
   setValue(newValue: T) {
-    if (newValue === this.value) {
+    if (newValue === this._value) {
       return;
     }
-    this.value = newValue;
-    this.updaters.forEach(up => up(newValue));
+    this._value = newValue;
+    this._updaters.forEach(up => up(newValue));
   }
 }
+
+const noopContext: IContextProvider<any> = {
+  register(_: StateUpdater<any>) {
+    console.warn("Consumer used without a Provider");
+  },
+  unregister(_: StateUpdater<any>) {
+    // do nothing
+  },
+  setValue(_: any) {
+    //do nothing;
+  }
+};
 
 let ids = 0;
 
@@ -67,21 +73,21 @@ export function createContext<T>(value: T): Context<T> {
   const key = `_preactContextProvider-${ids++}`;
 
   class Provider extends Component<ProviderProps<T>, any> {
-    private contextProvider: ContextProvider<T>;
+    private _contextProvider: IContextProvider<T>;
 
     constructor(props: ProviderProps<T>) {
       super(props);
-      this.contextProvider = new ContextProvider(props.value);
+      this._contextProvider = new ContextProvider(props.value);
     }
 
     getChildContext() {
       return {
-        [key]: this.contextProvider
+        [key]: this._contextProvider
       };
     }
 
     componentDidUpdate() {
-      this.contextProvider.setValue(this.props.value);
+      this._contextProvider.setValue(this.props.value);
     }
 
     render() {
@@ -96,17 +102,14 @@ export function createContext<T>(value: T): Context<T> {
     }
   }
 
-  class Consumer extends Component<ConsumerProps<T>, { value: T }> {
-    private unregister: () => void;
-
+  class Consumer extends Component<ConsumerProps<T>, ConsumerState<T>> {
     constructor(props?: ConsumerProps<T>, ctx?: any) {
       super(props, ctx);
-      this.unregister = noop;
       this.state = { value };
     }
 
     componentDidMount() {
-      this.register();
+      (this.context[key] || noopContext).register(this.updateContext);
     }
 
     shouldComponentUpdate(
@@ -115,26 +118,26 @@ export function createContext<T>(value: T): Context<T> {
     ) {
       return (
         this.state.value !== nextState.value ||
-        !sameRenderFunction(this.props, nextProps)
+        getRenderer(this.props) !== getRenderer(nextProps)
       );
     }
 
     componentWillUnmount() {
-      this.unregister();
+      (this.context[key] || noopContext).unregister(this.updateContext);
     }
 
     componentDidUpdate(_: any, __: any, prevCtx: any) {
-      if (prevCtx[key] === this.context[key]) {
+      const previousProvider = prevCtx[key];
+      if (previousProvider === this.context[key]) {
         return;
       }
-      this.unregister();
-      this.unregister = noop;
-      this.register();
+      (previousProvider || noopContext).unregister(this.updateContext);
+      this.componentDidMount();
     }
 
     render() {
-      const { children, render } = this.props;
-      const r = (children && children[0]) || render;
+      const { render } = this.props;
+      const r = getRenderer(this.props);
       if (render && render !== r) {
         console.warn(
           "Both children and a render function are defined. Children will be used"
@@ -149,15 +152,6 @@ export function createContext<T>(value: T): Context<T> {
     }
 
     private updateContext = (value: T) => this.setState({ value });
-
-    private register() {
-      const provider = this.context[key];
-      if (provider) {
-        this.unregister = provider.register(this.updateContext);
-      } else {
-        console.warn("Consumer used without a Provider");
-      }
-    }
   }
 
   return {
