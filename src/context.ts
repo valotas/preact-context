@@ -12,7 +12,7 @@ export type ConsumerState<T> = ProviderProps<T>;
 
 export interface Context<T> {
   Provider: ComponentConstructor<ProviderProps<T>, {}>;
-  Consumer: ComponentConstructor<ConsumerProps<T>, { value: T }>;
+  Consumer: ComponentConstructor<ConsumerProps<T>, ConsumerState<T>>;
 }
 
 type StateUpdater<T> = (val: T) => void;
@@ -23,22 +23,23 @@ function getRenderer<T>(props: RenderableProps<ConsumerProps<T>>) {
 }
 
 interface IContextProvider<T> {
+  readonly value: T;
   register: (updater: StateUpdater<T>) => void;
   unregister: (updater: StateUpdater<T>) => void;
   setValue: (value: T) => void;
 }
 
 class ContextProvider<T> implements IContextProvider<T> {
-  private _value: T;
+  value: T;
   private _updaters: Array<StateUpdater<T>> = [];
 
   constructor(initialValue: T) {
-    this._value = initialValue;
+    this.value = initialValue;
   }
 
   register(updater: StateUpdater<T>) {
     this._updaters.push(updater);
-    updater(this._value);
+    updater(this.value);
     return () => this.unregister(updater);
   }
 
@@ -47,15 +48,16 @@ class ContextProvider<T> implements IContextProvider<T> {
   }
 
   setValue(newValue: T) {
-    if (newValue === this._value) {
+    if (newValue === this.value) {
       return;
     }
-    this._value = newValue;
+    this.value = newValue;
     this._updaters.forEach(up => up(newValue));
   }
 }
 
 const noopContext: IContextProvider<any> = {
+  value: undefined,
   register(_: StateUpdater<any>) {
     console.warn("Consumer used without a Provider");
   },
@@ -105,11 +107,11 @@ export function createContext<T>(value: T): Context<T> {
   class Consumer extends Component<ConsumerProps<T>, ConsumerState<T>> {
     constructor(props?: ConsumerProps<T>, ctx?: any) {
       super(props, ctx);
-      this.state = { value };
+      this.state = { value: this.getContextProvider().value || value };
     }
 
     componentDidMount() {
-      (this.context[key] || noopContext).register(this.updateContext);
+      this.getContextProvider().register(this.updateContext);
     }
 
     shouldComponentUpdate(
@@ -123,7 +125,7 @@ export function createContext<T>(value: T): Context<T> {
     }
 
     componentWillUnmount() {
-      (this.context[key] || noopContext).unregister(this.updateContext);
+      this.getContextProvider().unregister(this.updateContext);
     }
 
     componentDidUpdate(_: any, __: any, prevCtx: any) {
@@ -152,10 +154,17 @@ export function createContext<T>(value: T): Context<T> {
     }
 
     private updateContext = (value: T) => this.setState({ value });
+
+    private getContextProvider() {
+      return this.context[key] || noopContext;
+    }
   }
 
   return {
     Provider: Provider as ComponentConstructor<ProviderProps<T>, {}>,
-    Consumer: Consumer as ComponentConstructor<ConsumerProps<T>, { value: T }>
+    Consumer: Consumer as ComponentConstructor<
+      ConsumerProps<T>,
+      ConsumerState<T>
+    >
   };
 }

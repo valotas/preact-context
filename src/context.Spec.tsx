@@ -168,6 +168,24 @@ describe("context", () => {
       expect(scratch.innerHTML).toEqual("Hi from 'The Provided Context'");
     });
 
+    it("make use of the provided value on init (should not cause a rerender)", () => {
+      const ctx = createContext("The Default Context");
+      let renderCounter = 0;
+      render(
+        <ctx.Provider value="The Provided Context">
+          <ctx.Consumer>
+            {(value: string) => {
+              renderCounter++;
+              return `'${value}' rendered ${renderCounter} times`;
+            }}
+          </ctx.Consumer>
+        </ctx.Provider>
+      );
+      expect(scratch.innerHTML).toEqual(
+        "'The Provided Context' rendered 1 times"
+      );
+    });
+
     it("updates the Consumer's value even if indirection is not rendered", () => {
       class Indirection extends Component<any, {}> {
         shouldComponentUpdate() {
@@ -232,7 +250,7 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          '{value}' rendered {renderCounter++} times
+          '{value}' rendered {++renderCounter} times
         </span>
       );
 
@@ -264,7 +282,7 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          '{value.prop}' rendered {renderCounter++} times
+          '{value.prop}' rendered {++renderCounter} times
         </span>
       );
 
@@ -297,7 +315,7 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          '{value.prop}' rendered {renderCounter++} times
+          '{value.prop}' rendered {++renderCounter} times
         </span>
       );
 
@@ -330,7 +348,7 @@ describe("context", () => {
       function printValue(value: any) {
         return (
           <span className="result">
-            '{value.prop}' rendered {renderCounter++} times
+            '{value.prop}' rendered {++renderCounter} times
           </span>
         );
       }
@@ -364,7 +382,7 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          '{value.prop}' rendered {renderCounter++} times
+          '{value.prop}' rendered {++renderCounter} times
         </span>
       );
 
