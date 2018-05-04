@@ -217,13 +217,178 @@ describe("context", () => {
       );
     });
 
-    it("Renders nothing if no function child is given", () => {
+    it("Renders nothing if no function child or render is given", () => {
       const ctx = createContext("The Default Context");
       sandbox.stub(console, "warn");
 
-      render(<ctx.Consumer>Nothing</ctx.Consumer>);
+      render(<ctx.Consumer>Something</ctx.Consumer>);
 
       expect(scratch.innerHTML).toEqual("");
+    });
+
+    it("does not rerender if context has not been changed", () => {
+      const ctx = createContext("The Default Context");
+      sandbox.stub(console, "warn");
+      let renderCounter = 0;
+      const printValue = (value: any) => (
+        <span className="result">
+          '{value}' rendered {renderCounter++} times
+        </span>
+      );
+
+      render(
+        <ctx.Provider value="provided context">
+          <ctx.Consumer render={printValue} />
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'provided context' rendered 1 times"
+      );
+
+      // rerender
+      render(
+        <ctx.Provider value="provided context">
+          <ctx.Consumer render={printValue} />
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'provided context' rendered 1 times"
+      );
+    });
+
+    it("does not rerender if context instance has not been changed", () => {
+      const ctx = createContext({ prop: "da prop" });
+      sandbox.stub(console, "warn");
+      let renderCounter = 0;
+      const printValue = (value: any) => (
+        <span className="result">
+          '{value.prop}' rendered {renderCounter++} times
+        </span>
+      );
+
+      const updatedContext = { prop: "updated prop" };
+      render(
+        <ctx.Provider value={updatedContext}>
+          <ctx.Consumer render={printValue} />
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'updated prop' rendered 1 times"
+      );
+
+      // rerender
+      render(
+        <ctx.Provider value={updatedContext}>
+          <ctx.Consumer render={printValue} />
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'updated prop' rendered 1 times"
+      );
+    });
+
+    it("does rerender if context instance changes", () => {
+      const ctx = createContext({ prop: "da prop" });
+      sandbox.stub(console, "warn");
+      let renderCounter = 0;
+      const printValue = (value: any) => (
+        <span className="result">
+          '{value.prop}' rendered {renderCounter++} times
+        </span>
+      );
+
+      render(
+        <ctx.Provider value={{ prop: "updated prop" }}>
+          <ctx.Consumer render={printValue} />
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'updated prop' rendered 1 times"
+      );
+
+      // rerender
+      render(
+        <ctx.Provider value={{ prop: "updated prop" }}>
+          <ctx.Consumer render={printValue} />
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'updated prop' rendered 2 times"
+      );
+    });
+
+    it("rerenders if provided render function changes", () => {
+      const ctx = createContext({ prop: "da prop" });
+      sandbox.stub(console, "warn");
+      let renderCounter = 0;
+      function printValue(value: any) {
+        return (
+          <span className="result">
+            '{value.prop}' rendered {renderCounter++} times
+          </span>
+        );
+      }
+
+      const updatedContext = { prop: "updated prop" };
+      render(
+        <ctx.Provider value={updatedContext}>
+          <ctx.Consumer render={printValue.bind(null)} />
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'updated prop' rendered 1 times"
+      );
+
+      // rerender
+      render(
+        <ctx.Provider value={updatedContext}>
+          <ctx.Consumer render={printValue.bind(null)} />
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'updated prop' rendered 2 times"
+      );
+    });
+
+    it("rerenders if provided child function changes", () => {
+      const ctx = createContext({ prop: "da prop" });
+      sandbox.stub(console, "warn");
+      let renderCounter = 0;
+      const printValue = (value: any) => (
+        <span className="result">
+          '{value.prop}' rendered {renderCounter++} times
+        </span>
+      );
+
+      const updatedContext = { prop: "updated prop" };
+      render(
+        <ctx.Provider value={updatedContext}>
+          <ctx.Consumer>{printValue}</ctx.Consumer>
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'updated prop' rendered 1 times"
+      );
+
+      // rerender
+      render(
+        <ctx.Provider value={updatedContext}>
+          <ctx.Consumer>{(value: any) => printValue(value)}</ctx.Consumer>
+        </ctx.Provider>
+      );
+
+      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+        "'updated prop' rendered 2 times"
+      );
     });
   });
 

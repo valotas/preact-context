@@ -1,4 +1,4 @@
-import { h, Component, ComponentConstructor } from "preact";
+import { h, Component, ComponentConstructor, RenderableProps } from "preact";
 
 export interface ProviderProps<T> {
   value: T;
@@ -8,6 +8,8 @@ export interface ConsumerProps<T> {
   render?: (val: T) => any;
 }
 
+export type ConsumerState<T> = ProviderProps<T>;
+
 export interface Context<T> {
   Provider: ComponentConstructor<ProviderProps<T>, {}>;
   Consumer: ComponentConstructor<ConsumerProps<T>, { value: T }>;
@@ -16,6 +18,25 @@ export interface Context<T> {
 type StateUpdater<T> = (val: T) => void;
 
 function noop() {}
+
+function sameRenderFunction<T>(
+  props: RenderableProps<ConsumerProps<T>>,
+  nextProps: RenderableProps<ConsumerProps<T>>
+) {
+  if (props.render !== nextProps.render) {
+    return false;
+  }
+
+  const children = props.children || [];
+  const nextChildren = nextProps.children || [];
+  if (children.length !== nextChildren.length) {
+    return false;
+  }
+  if (children[0] !== nextChildren[0]) {
+    return false;
+  }
+  return true;
+}
 
 class ContextProvider<T> {
   value: T;
@@ -86,6 +107,16 @@ export function createContext<T>(value: T): Context<T> {
 
     componentDidMount() {
       this.register();
+    }
+
+    shouldComponentUpdate(
+      nextProps: ConsumerProps<T>,
+      nextState: ConsumerState<T>
+    ) {
+      return (
+        this.state.value !== nextState.value ||
+        !sameRenderFunction(this.props, nextProps)
+      );
     }
 
     componentWillUnmount() {
