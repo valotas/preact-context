@@ -340,6 +340,98 @@ describe("context", () => {
       );
     });
 
+    it("skips rerendering with bitmask", () => {
+      const ctx = createContext({ foo: 0, bar: 0 }, (a, b) => {
+        let result = 0;
+        if (a.foo !== b.foo) {
+          result |= 0b01;
+        }
+        if (a.bar !== b.bar) {
+          result |= 0b10;
+        }
+        return result;
+      });
+
+      function Provider(props: any) {
+        return (
+          <ctx.Provider value={{ foo: props.foo, bar: props.bar }}>
+            {props.children}
+          </ctx.Provider>
+        );
+      }
+
+      let fooCounter = 0;
+      function Foo() {
+        return (
+          <ctx.Consumer unstable_observedBits={0b01}>
+            {(value: any) => {
+              fooCounter++;
+              return (
+                <span className="foo">
+                  Foo: {value.foo}, rendered {fooCounter} times
+                </span>
+              );
+            }}
+          </ctx.Consumer>
+        );
+      }
+
+      let barCounter = 0;
+      function Bar() {
+        return (
+          <ctx.Consumer unstable_observedBits={0b10}>
+            {(value: any) => {
+              barCounter++;
+              return (
+                <span className="bar">
+                  Bar: {value.bar}, rendered {barCounter} times
+                </span>
+              );
+            }}
+          </ctx.Consumer>
+        );
+      }
+
+      class Indirection extends Component<any, any> {
+        shouldComponentUpdate() {
+          return false;
+        }
+        render() {
+          return <div className="indirection">{this.props.children}</div>;
+        }
+      }
+
+      function App({ foo, bar }: any) {
+        return (
+          <Provider foo={foo} bar={bar}>
+            <Indirection>
+              <Foo />
+              <Bar />
+            </Indirection>
+          </Provider>
+        );
+      }
+
+      render(<App foo={1} bar={1} />);
+      expect(html(scratch, ".foo")).toEqual("Foo: 1, rendered 1 times");
+      expect(html(scratch, ".bar")).toEqual("Bar: 1, rendered 1 times");
+
+      // Update only foo
+      render(<App foo={2} bar={1} />);
+      expect(html(scratch, ".foo")).toEqual("Foo: 2, rendered 2 times");
+      expect(html(scratch, ".bar")).toEqual("Bar: 1, rendered 1 times");
+
+      // Update only bar
+      render(<App foo={2} bar={2} />);
+      expect(html(scratch, ".foo")).toEqual("Foo: 2, rendered 2 times");
+      expect(html(scratch, ".bar")).toEqual("Bar: 2, rendered 2 times");
+
+      // Update both
+      render(<App foo={3} bar={3} />);
+      expect(html(scratch, ".foo")).toEqual("Foo: 3, rendered 3 times");
+      expect(html(scratch, ".bar")).toEqual("Bar: 3, rendered 3 times");
+    });
+
     it("rerenders if provided render function changes", () => {
       const ctx = createContext({ prop: "da prop" });
       sandbox.stub(console, "warn");

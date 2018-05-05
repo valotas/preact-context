@@ -6,6 +6,7 @@ export interface ProviderProps<T> {
 
 export interface ConsumerProps<T> {
   render?: (val: T) => any;
+  unstable_observedBits?: number;
 }
 
 export type ConsumerState<T> = ProviderProps<T>;
@@ -15,7 +16,7 @@ export interface Context<T> {
   Consumer: ComponentConstructor<ConsumerProps<T>, ConsumerState<T>>;
 }
 
-type StateUpdater<T> = (val: T) => void;
+type StateUpdater<T> = (val: T, bitmask: number) => void;
 
 function getRenderer<T>(props: RenderableProps<ConsumerProps<T>>) {
   const { children, render } = props;
@@ -26,8 +27,12 @@ interface IContextProvider<T> {
   readonly value: T;
   register: (updater: StateUpdater<T>) => void;
   unregister: (updater: StateUpdater<T>) => void;
-  setValue: (value: T) => void;
+  setValue: (value: T, bitmaskFactory: BitmaskFactory<T>) => void;
 }
+
+const MAX_SIGNED_31_BIT_INT = 1073741823;
+
+export type BitmaskFactory<T> = (a: T, b: T) => number;
 
 class ContextProvider<T> implements IContextProvider<T> {
   value: T;
@@ -39,7 +44,7 @@ class ContextProvider<T> implements IContextProvider<T> {
 
   register(updater: StateUpdater<T>) {
     this._updaters.push(updater);
-    updater(this.value);
+    updater(this.value, 0);
     return () => this.unregister(updater);
   }
 
@@ -47,12 +52,16 @@ class ContextProvider<T> implements IContextProvider<T> {
     this._updaters = this._updaters.filter(i => i !== updater);
   }
 
-  setValue(newValue: T) {
+  setValue(newValue: T, bitmaskFactory: BitmaskFactory<T>) {
     if (newValue === this.value) {
       return;
     }
+
+    let diff = bitmaskFactory(this.value, newValue);
+    diff = diff |= 0;
+
     this.value = newValue;
-    this._updaters.forEach(up => up(newValue));
+    this._updaters.forEach(up => up(newValue, diff));
   }
 }
 
@@ -69,9 +78,13 @@ const noopContext: IContextProvider<any> = {
   }
 };
 
+const defaultBitmaskFactory: BitmaskFactory<any> = () => MAX_SIGNED_31_BIT_INT;
 let ids = 0;
 
-export function createContext<T>(value: T): Context<T> {
+export function createContext<T>(
+  value: T,
+  bitmaskFactory: BitmaskFactory<T> = defaultBitmaskFactory
+): Context<T> {
   const key = `_preactContextProvider-${ids++}`;
 
   class Provider extends Component<ProviderProps<T>, any> {
@@ -89,7 +102,7 @@ export function createContext<T>(value: T): Context<T> {
     }
 
     componentDidUpdate() {
-      this._contextProvider.setValue(this.props.value);
+      this._contextProvider.setValue(this.props.value, bitmaskFactory);
     }
 
     render() {
@@ -153,7 +166,19 @@ export function createContext<T>(value: T): Context<T> {
       );
     }
 
-    private updateContext = (value: T) => this.setState({ value });
+    private updateContext = (value: T, bitmask: number) => {
+      const { unstable_observedBits } = this.props;
+      let observed =
+        unstable_observedBits === undefined || unstable_observedBits === null
+          ? MAX_SIGNED_31_BIT_INT
+          : unstable_observedBits;
+      observed = observed | 0;
+
+      if ((observed & bitmask) === 0) {
+        return;
+      }
+      this.setState({ value });
+    };
 
     private getContextProvider() {
       return this.context[key] || noopContext;
