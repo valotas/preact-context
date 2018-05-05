@@ -9,6 +9,7 @@ import {
 import expect from "expect";
 import * as sinon from "sinon";
 import { createContext } from "../context";
+import { html } from "./utils";
 
 const Empty = () => null;
 
@@ -61,7 +62,7 @@ describe("context", () => {
       const ctx = createContext("");
       render(<ctx.Provider value="a value">Hi from provider</ctx.Provider>);
 
-      expect(scratch.innerHTML).toEqual("Hi from provider");
+      expect(html(scratch)).toEqual("Hi from provider");
     });
 
     it("updates the value accordingly", () => {
@@ -75,7 +76,7 @@ describe("context", () => {
           <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
-      expect(scratch.innerHTML).toEqual("result: '2'");
+      expect(html(scratch)).toEqual("result: '2'");
 
       // rerender
       render(
@@ -84,7 +85,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.innerHTML).toEqual("result: '3'");
+      expect(html(scratch)).toEqual("result: '3'");
       sinon.assert.calledOnce(componentDidUpdate);
     });
 
@@ -97,7 +98,7 @@ describe("context", () => {
           <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
-      expect(scratch.innerHTML).toEqual("<span><div></div>result: '2'</span>");
+      expect(html(scratch)).toEqual("<span><div></div>result: '2'</span>");
     });
   });
 
@@ -110,7 +111,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.innerHTML).toEqual("Hi from function");
+      expect(html(scratch)).toEqual("Hi from function");
     });
 
     it("executes the given render function", () => {
@@ -121,7 +122,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.innerHTML).toEqual("Hi from render");
+      expect(html(scratch)).toEqual("Hi from render");
     });
 
     it("warns if both a render and children are given", () => {
@@ -141,7 +142,7 @@ describe("context", () => {
       );
     });
 
-    it("warns if used without a Provide", () => {
+    it("warns if used without a Provider", () => {
       const ctx = createContext("The Default Context");
       const warn = sandbox.stub(console, "warn");
       render(
@@ -155,7 +156,7 @@ describe("context", () => {
       const ctx = createContext("The Default Context");
       sandbox.stub(console, "warn");
       render(<ctx.Consumer render={value => `Hi from '${value}'`} />);
-      expect(scratch.innerHTML).toEqual("Hi from 'The Default Context'");
+      expect(html(scratch)).toEqual("Hi from 'The Default Context'");
     });
 
     it("has access to the provided value", () => {
@@ -165,7 +166,7 @@ describe("context", () => {
           <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
-      expect(scratch.innerHTML).toEqual("Hi from 'The Provided Context'");
+      expect(html(scratch)).toEqual("Hi from 'The Provided Context'");
     });
 
     it("make use of the provided value on init (should not cause a rerender)", () => {
@@ -181,9 +182,7 @@ describe("context", () => {
           </ctx.Consumer>
         </ctx.Provider>
       );
-      expect(scratch.innerHTML).toEqual(
-        "'The Provided Context' rendered 1 times"
-      );
+      expect(html(scratch)).toEqual("'The Provided Context' rendered 1 times");
     });
 
     it("updates the Consumer's value even if indirection is not rendered", () => {
@@ -220,7 +219,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.innerHTML).toEqual("Hi from 'The Updated Context'");
+      expect(html(scratch)).toEqual("Hi from 'The Updated Context'");
     });
 
     it("warns if it is given a children other than a function", () => {
@@ -241,7 +240,7 @@ describe("context", () => {
 
       render(<ctx.Consumer>Something</ctx.Consumer>);
 
-      expect(scratch.innerHTML).toEqual("");
+      expect(html(scratch)).toEqual("");
     });
 
     it("does not rerender if context has not been changed", () => {
@@ -260,7 +259,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'provided context' rendered 1 times"
       );
 
@@ -271,7 +270,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'provided context' rendered 1 times"
       );
     });
@@ -293,7 +292,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'updated prop' rendered 1 times"
       );
 
@@ -304,7 +303,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'updated prop' rendered 1 times"
       );
     });
@@ -325,7 +324,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'updated prop' rendered 1 times"
       );
 
@@ -336,7 +335,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'updated prop' rendered 2 times"
       );
     });
@@ -360,7 +359,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'updated prop' rendered 1 times"
       );
 
@@ -371,7 +370,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'updated prop' rendered 2 times"
       );
     });
@@ -393,7 +392,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'updated prop' rendered 1 times"
       );
 
@@ -404,7 +403,7 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      expect(scratch.querySelectorAll(".result")[0].innerHTML).toEqual(
+      expect(html(scratch, ".result")).toEqual(
         "'updated prop' rendered 2 times"
       );
     });
@@ -433,13 +432,8 @@ describe("context", () => {
         </ctx.Provider>
       );
 
-      const result = document.querySelector(".result");
-      expect(result).not.toBeNull();
-      expect(result!.innerHTML).toEqual("12");
-
-      const nested = document.querySelector(".nested-result");
-      expect(nested).not.toBeNull();
-      expect(nested!.innerHTML).toEqual("120");
+      expect(html(scratch, ".result")).toEqual("12");
+      expect(html(scratch, ".nested-result")).toEqual("120");
     });
 
     it("each context can consume other contextes", () => {
@@ -468,17 +462,9 @@ describe("context", () => {
         </numContext.Provider>
       );
 
-      const result = document.querySelector(".result");
-      expect(result).not.toBeNull();
-      expect(result!.innerHTML).toEqual("12");
-
-      const num = document.querySelector(".nested-number");
-      expect(num).not.toBeNull();
-      expect(num!.innerHTML).toEqual("12");
-
-      const nested = document.querySelector(".nested-result");
-      expect(nested).not.toBeNull();
-      expect(nested!.innerHTML).toEqual("consumed num: 12");
+      expect(html(scratch, ".result")).toEqual("12");
+      expect(html(scratch, ".nested-number")).toEqual("12");
+      expect(html(scratch, ".nested-result")).toEqual("consumed num: 12");
     });
 
     it("each context provides the value to it's consumer", () => {
@@ -508,17 +494,9 @@ describe("context", () => {
         </numContext.Provider>
       );
 
-      const result = document.querySelector(".result");
-      expect(result).not.toBeNull();
-      expect(result!.innerHTML).toEqual("12");
-
-      const number = document.querySelector(".number-result");
-      expect(number).not.toBeNull();
-      expect(number!.innerHTML).toEqual("12");
-
-      const text = document.querySelector(".text-result");
-      expect(text).not.toBeNull();
-      expect(text!.innerHTML).toEqual("hi");
+      expect(html(scratch, ".result")).toEqual("12");
+      expect(html(scratch, ".number-result")).toEqual("12");
+      expect(html(scratch, ".text-result")).toEqual("hi");
     });
 
     it("different branches", () => {
@@ -571,21 +549,10 @@ describe("context", () => {
         </numContext.Provider>
       );
 
-      expect(document.querySelector(".c1")).not.toBeNull();
-      expect(document.querySelector(".c1 .value")!.innerHTML).toEqual("hi");
-
-      expect(document.querySelector(".c2")).not.toBeNull();
-      expect(document.querySelector(".c2 .value")!.innerHTML).toEqual("12");
-
-      expect(document.querySelector(".c3 .c5")).not.toBeNull();
-      expect(document.querySelector(".c3 .c5 .value")!.innerHTML).toEqual(
-        "twelve"
-      );
-
-      expect(document.querySelector(".c3 .c6")).not.toBeNull();
-      expect(document.querySelector(".c3 .c6 .value")!.innerHTML).toEqual(
-        "120"
-      );
+      expect(html(scratch, ".c1 .value")).toEqual("hi");
+      expect(html(scratch, ".c2 .value")).toEqual("12");
+      expect(html(scratch, ".c3 .c5 .value")).toEqual("twelve");
+      expect(html(scratch, ".c3 .c6 .value")).toEqual("120");
     });
   });
 });
