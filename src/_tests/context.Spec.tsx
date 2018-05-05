@@ -8,7 +8,7 @@ import {
 } from "preact"; /**@jsx h */
 import expect from "expect";
 import * as sinon from "sinon";
-import { createContext } from "./context";
+import { createContext } from "../context";
 
 const Empty = () => null;
 
