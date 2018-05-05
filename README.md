@@ -1,5 +1,8 @@
 # React's new Context Api for preact [![Build Status](https://travis-ci.org/valotas/preact-context.svg?branch=master)](https://travis-ci.org/valotas/preact-context)
 
+This is an implementation react's [new context api][rfcs]. You can read more
+about it on [react's documentation][react-context-doc] page.
+
 This package provides the `createContext` factory function that can be used
 in order to create a context:
 
@@ -17,9 +20,7 @@ The returned object contains two components: a `Provider` and a `Consumer`.
 It can be used in order to consume the provided object:
 
 ```jsx
-<Theme.Consumer>
-  {theme => `Selected theme: ${theme}`}
-</Theme.Consumer>
+<Theme.Consumer>{theme => `Selected theme: ${theme}`}</Theme.Consumer>
 ```
 
 Alternatively, it can also be used with a render property:
@@ -47,3 +48,10 @@ The `watch` script will watch for changes, compile and run the tests.
 $ npm i
 $ npm run watch
 ```
+
+# License
+
+Licensed under the [Apache License, Version 2.0](LICENSE)
+
+[rfcs]: https://github.com/acdlite/rfcs/blob/new-version-of-context/text/0000-new-version-of-context.md
+[react-context-doc]: https://reactjs.org/docs/context.html
