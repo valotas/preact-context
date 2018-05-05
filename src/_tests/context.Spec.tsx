@@ -1,4 +1,3 @@
-import { JSDOM } from "jsdom";
 import {
   h,
   render as preactRender,
@@ -9,7 +8,7 @@ import {
 import expect from "expect";
 import * as sinon from "sinon";
 import { createContext } from "../context";
-import { html } from "./utils";
+import { html, setUpJsdomIfNotBrowser } from "./utils";
 
 const Empty = () => null;
 
@@ -20,14 +19,7 @@ describe("context", () => {
   let scratch: HTMLDivElement;
 
   before(() => {
-    const anyGlobal = global as any;
-    let document = anyGlobal.document;
-    if (!document) {
-      // we are not running in a browser, create a Jsdom document
-      document = anyGlobal.document = new JSDOM(
-        `<body></body>`
-      ).window.document;
-    }
+    setUpJsdomIfNotBrowser();
     scratch = document.createElement("div");
     document.body.appendChild(scratch);
   });
