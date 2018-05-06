@@ -11,7 +11,7 @@
     "prepare": "npm run clean && npm run build",
     "watch:build": "npm run build -- -w",
     "test:browser": "karma start",
-    "test:jsdom": "mocha ./dist/**/*.Spec.js",
+    "test:jsdom": "mocha -r ./dist/_tests/register-jsdom.js ./dist/**/*.Spec.js",
     "test": "npm-run-all test:*",
     "watch:test": "npm run test:jsdom -- --watch --reporter dot",
     "watch": "npm run prepare && npm-run-all --parallel watch:*",

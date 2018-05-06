@@ -8,7 +8,7 @@ import {
 import expect from "expect";
 import * as sinon from "sinon";
 import { createContext } from "../context";
-import { html, setUpJsdomIfNotBrowser } from "./utils";
+import { html } from "./utils";
 
 const Empty = () => null;
 
@@ -19,7 +19,6 @@ describe("context", () => {
   let scratch: HTMLDivElement;
 
   before(() => {
-    setUpJsdomIfNotBrowser();
     scratch = document.createElement("div");
     document.body.appendChild(scratch);
   });
