@@ -1,5 +1,7 @@
 # React's new Context Api for preact [![Build Status](https://travis-ci.org/valotas/preact-context.svg?branch=master)](https://travis-ci.org/valotas/preact-context)
 
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/valotas.svg)](https://saucelabs.com/u/valotas)
+
 This is an implementation react's [new context api][rfcs]. You can read more
 about it on [react's documentation][react-context-doc] page.
 
@@ -53,5 +55,10 @@ $ npm run watch
 
 Licensed under the [Apache License, Version 2.0](LICENSE)
 
+# Big Thanks
+
+Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs][saucelabs]
+
 [rfcs]: https://github.com/acdlite/rfcs/blob/new-version-of-context/text/0000-new-version-of-context.md
 [react-context-doc]: https://reactjs.org/docs/context.html
+[saucelabs]: https://saucelabs.com
