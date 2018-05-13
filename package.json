@@ -5,14 +5,28 @@
   "main": "./dist/context.js",
   "types": "./dist/context.d.ts",
   "source": "./src/context.ts",
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "typescript",
+      "typescript/react",
+      "typescript/prettier"
+    ],
+    "rules": {
+      "require-jsdoc": 0,
+      "typescript/interface-name-prefix": 0,
+      "typescript/explicit-member-accessibility": 0
+    }
+  },
   "scripts": {
     "clean": "rimraf dist",
     "build": "tsc -p .",
     "prepare": "npm run clean && npm run build",
     "watch:build": "npm run build -- -w",
+    "lint": "eslint --ext ts --ext tsx --ext js src karma.conf.js",
     "test:browser": "karma start",
     "test:jsdom": "mocha -r ./dist/_tests/register-jsdom.js ./dist/**/*.Spec.js",
-    "test": "npm-run-all test:browser test:jsdom",
+    "test": "npm-run-all lint test:jsdom test:browser",
     "watch:test": "npm run test:jsdom -- --watch --reporter dot",
     "watch": "npm run prepare && npm-run-all --parallel watch:*",
     "preversion": "npm run test"
@@ -43,6 +57,12 @@
     "@types/sinon": "^4.3.1",
     "browserify": "^16.2.0",
     "core-js": "^2.5.5",
+    "eslint": "^4.19.1",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-config-typescript": "^1.0.2",
+    "eslint-plugin-prettier": "^2.6.0",
+    "eslint-plugin-react": "^7.8.1",
+    "eslint-plugin-typescript": "^0.12.0",
     "expect": "^22.4.3",
     "jsdom": "^11.9.0",
     "karma": "^2.0.2",
@@ -54,9 +74,10 @@
     "mocha": "^5.0.4",
     "npm-run-all": "^4.1.2",
     "preact": "^8.2.9",
+    "prettier": "^1.12.1",
     "rimraf": "^2.6.2",
     "sinon": "^4.4.6",
-    "typescript": "^2.7.2"
-  },
-  "dependencies": {}
+    "typescript": "^2.7.2",
+    "typescript-eslint-parser": "^15.0.0"
+  }
 }

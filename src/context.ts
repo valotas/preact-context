@@ -35,8 +35,8 @@ const MAX_SIGNED_31_BIT_INT = 1073741823;
 export type BitmaskFactory<T> = (a: T, b: T) => number;
 
 class ContextProvider<T> implements IContextProvider<T> {
-  value: T;
   private _updaters: Array<StateUpdater<T>> = [];
+  value: T;
 
   constructor(initialValue: T) {
     this.value = initialValue;

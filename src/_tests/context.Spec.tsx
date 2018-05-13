@@ -14,9 +14,11 @@ const Empty = () => null;
 
 describe("context", () => {
   const sandbox = sinon.createSandbox();
+
+  let scratch: HTMLDivElement;
+
   const render = (comp: JSX.Element) =>
     preactRender(comp, scratch, scratch.lastChild as Element);
-  let scratch: HTMLDivElement;
 
   before(() => {
     scratch = document.createElement("div");
@@ -240,7 +242,7 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          '{value}' rendered {++renderCounter} times
+          &apos;{value}&apos; rendered {++renderCounter} times
         </span>
       );
 
@@ -272,7 +274,7 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          '{value.prop}' rendered {++renderCounter} times
+          &apos;{value.prop}&apos; rendered {++renderCounter} times
         </span>
       );
 
@@ -305,7 +307,7 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          '{value.prop}' rendered {++renderCounter} times
+          &apos;{value.prop}&apos; rendered {++renderCounter} times
         </span>
       );
 
@@ -430,7 +432,7 @@ describe("context", () => {
       function printValue(value: any) {
         return (
           <span className="result">
-            '{value.prop}' rendered {++renderCounter} times
+            &apos;{value.prop}&apos; rendered {++renderCounter} times
           </span>
         );
       }
@@ -464,7 +466,7 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          '{value.prop}' rendered {++renderCounter} times
+          &apos;{value.prop}&apos; rendered {++renderCounter} times
         </span>
       );
 
@@ -592,7 +594,7 @@ describe("context", () => {
           <textContext.Consumer>
             {(value: string) => (
               <div className={`text-consumer c${props.id}`}>
-                <span class="value">{value}</span>
+                <span className="value">{value}</span>
                 {props.children}
               </div>
             )}
@@ -605,7 +607,7 @@ describe("context", () => {
           <numContext.Consumer>
             {(value: string) => (
               <div className={`num-consumer c${props.id}`}>
-                <span class="value">{value}</span>
+                <span className="value">{value}</span>
                 {props.children}
               </div>
             )}
