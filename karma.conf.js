@@ -1,4 +1,10 @@
 const path = require("path");
+const commonjs = require("rollup-plugin-commonjs");
+const nodeResolve = require("rollup-plugin-node-resolve");
+const nodeGlobals = require("rollup-plugin-node-globals");
+const nodeBuiltins = require("rollup-plugin-node-builtins");
+const pkg = require("./package.json");
+
 const sauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
 
 const sauceLabsLaunchers = {
@@ -74,17 +80,46 @@ const inlineCoreJs = () => {
   return inline;
 };
 
+const preactContextId = path.resolve("./dist/esm/context.js");
+const loadPreactContextMin = () => {
+  return {
+    load: id => {
+      if (id === preactContextId) {
+        return `
+          export var createContext = function() {
+            const pc = window.preactContext;
+            return pc.createContext.apply(pc, arguments);
+          }`;
+      }
+    }
+  };
+};
+
 module.exports = config =>
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: "",
 
-    // frameworks to u  se
+    // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ["browserify", "mocha", "inline-mocha-fix"],
+    frameworks: ["mocha", "inline-mocha-fix"],
 
     // list of files / patterns to load in the browser
-    files: ["dist/**/*.Spec.js"],
+    files: [
+      {
+        pattern: path.resolve("./node_modules/preact/dist/preact.min.js"),
+        included: true,
+        served: true,
+        watched: false
+      },
+      {
+        pattern: path.resolve(pkg.browser),
+        included: true,
+        served: true,
+        watched: false
+      },
+      "dist/**/*.Spec.js"
+    ],
 
     // list of files / patterns to exclude
     exclude: [],
@@ -92,7 +127,26 @@ module.exports = config =>
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      "dist/**/*.js": ["browserify"]
+      "dist/esm/**/*.js": ["rollup"]
+    },
+
+    rollupPreprocessor: {
+      external: ["preact"],
+      context: "window",
+      plugins: [
+        loadPreactContextMin(),
+        nodeResolve(),
+        commonjs({ include: "node_modules/**" }),
+        nodeGlobals(),
+        nodeBuiltins()
+      ],
+      output: {
+        name: "preactContextTests",
+        format: "iife",
+        globals: {
+          preact: "preact"
+        }
+      }
     },
 
     // test results reporter to use
@@ -137,7 +191,7 @@ module.exports = config =>
       require("karma-chrome-launcher"),
       require("karma-firefox-launcher"),
       require("karma-sauce-launcher"),
-      require("karma-browserify"),
+      require("karma-rollup-preprocessor"),
       {
         "framework:inline-mocha-fix": ["factory", inlineCoreJs()]
       }
