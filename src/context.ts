@@ -47,9 +47,7 @@ export function createContext<T>(
     }
 
     getChildContext() {
-      return {
-        [key]: this._contextProvider
-      };
+      return { [key]: this._contextProvider };
     }
 
     componentDidUpdate() {
@@ -70,11 +68,11 @@ export function createContext<T>(
   class Consumer extends Component<ConsumerProps<T>, ConsumerState<T>> {
     constructor(props?: ConsumerProps<T>, ctx?: any) {
       super(props, ctx);
-      this.state = { value: this.getContextProvider().val() || value };
+      this.state = { value: this._getEmitter().val() || value };
     }
 
     componentDidMount() {
-      this.getContextProvider().register(this.updateContext);
+      this._getEmitter().register(this._updateContext);
     }
 
     shouldComponentUpdate(
@@ -88,7 +86,7 @@ export function createContext<T>(
     }
 
     componentWillUnmount() {
-      this.getContextProvider().unregister(this.updateContext);
+      this._getEmitter().unregister(this._updateContext);
     }
 
     componentDidUpdate(_: any, __: any, prevCtx: any) {
@@ -96,7 +94,7 @@ export function createContext<T>(
       if (previousProvider === this.context[key]) {
         return;
       }
-      (previousProvider || noopContext).unregister(this.updateContext);
+      (previousProvider || noopContext).unregister(this._updateContext);
       this.componentDidMount();
     }
 
@@ -116,7 +114,7 @@ export function createContext<T>(
       );
     }
 
-    private updateContext = (value: T, bitmask: number) => {
+    private _updateContext = (value: T, bitmask: number) => {
       const { unstable_observedBits } = this.props;
       let observed =
         unstable_observedBits === undefined || unstable_observedBits === null
@@ -130,7 +128,7 @@ export function createContext<T>(
       this.setState({ value });
     };
 
-    private getContextProvider(): ContextValueEmitter<T> {
+    private _getEmitter(): ContextValueEmitter<T> {
       return this.context[key] || noopContext;
     }
   }
