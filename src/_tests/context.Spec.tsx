@@ -1,11 +1,11 @@
-import {
-  h,
-  render as preactRender,
-  options,
-  Component,
-  RenderableProps
-} from "preact"; /**@jsx h */
 import expect from "expect";
+import {
+  Component,
+  RenderableProps,
+  h,
+  options,
+  render as preactRender
+} from "preact"; /**@jsx h */
 import * as sinon from "sinon";
 import { createContext } from "../context";
 import { html } from "./utils";
@@ -345,7 +345,7 @@ describe("context", () => {
         return result;
       });
 
-      function Provider(props: any) {
+      function TheProvider(props: any) {
         return (
           <ctx.Provider value={{ foo: props.foo, bar: props.bar }}>
             {props.children}
@@ -396,12 +396,12 @@ describe("context", () => {
 
       function App({ foo, bar }: any) {
         return (
-          <Provider foo={foo} bar={bar}>
+          <TheProvider foo={foo} bar={bar}>
             <Indirection>
               <Foo />
               <Bar />
             </Indirection>
-          </Provider>
+          </TheProvider>
         );
       }
 
