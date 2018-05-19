@@ -83,7 +83,7 @@ module.exports = function(args) {
     config.push(
       createTestConfig({
         input: "./dist/esm/_tests/context.Spec.js",
-        output: "./dist/test.Spec.js"
+        output: "./dist/_tests/test.Spec.js"
       })
     );
   }
