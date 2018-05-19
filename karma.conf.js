@@ -1,8 +1,5 @@
 const path = require("path");
-const commonjs = require("rollup-plugin-commonjs");
-const nodeResolve = require("rollup-plugin-node-resolve");
-const nodeGlobals = require("rollup-plugin-node-globals");
-const nodeBuiltins = require("rollup-plugin-node-builtins");
+const rollupConfig = require("./rollup.config").createTestConfig;
 const pkg = require("./package.json");
 
 const sauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
@@ -80,21 +77,6 @@ const inlineCoreJs = () => {
   return inline;
 };
 
-const preactContextId = path.resolve("./dist/esm/context.js");
-const loadPreactContextMin = () => {
-  return {
-    load: id => {
-      if (id === preactContextId) {
-        return `
-          export var createContext = function() {
-            const pc = window.preactContext;
-            return pc.createContext.apply(pc, arguments);
-          }`;
-      }
-    }
-  };
-};
-
 module.exports = config =>
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
@@ -130,24 +112,7 @@ module.exports = config =>
       "dist/esm/**/*.js": ["rollup"]
     },
 
-    rollupPreprocessor: {
-      external: ["preact"],
-      context: "window",
-      plugins: [
-        loadPreactContextMin(),
-        nodeResolve(),
-        commonjs({ include: "node_modules/**" }),
-        nodeGlobals(),
-        nodeBuiltins()
-      ],
-      output: {
-        name: "preactContextTests",
-        format: "iife",
-        globals: {
-          preact: "preact"
-        }
-      }
-    },
+    rollupPreprocessor: rollupConfig(),
 
     // test results reporter to use
     // possible values: 'dots', 'progress'

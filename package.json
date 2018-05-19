@@ -25,6 +25,7 @@
     "clean": "rimraf dist",
     "build": "tsc -p .",
     "rollup": "rollup -c",
+    "rollup-test": "rollup -c --includeSpecFiles",
     "min": "uglifyjs dist/context.js -o dist/context.min.js -c -m eval",
     "prepare": "npm-run-all clean build rollup min",
     "watch:build": "npm run build -- -w",
