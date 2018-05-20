@@ -1,5 +1,7 @@
 # React's new Context Api for preact [![Build Status](https://travis-ci.org/valotas/preact-context.svg?branch=master)](https://travis-ci.org/valotas/preact-context)
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/valotas/preact-context.svg)](https://greenkeeper.io/)
+
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/valotas.svg)](https://saucelabs.com/u/valotas)
 
 This is an implementation of react's [new context api][rfcs]. You can read more
