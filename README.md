@@ -1,5 +1,7 @@
-# React's new Context Api for preact [![Build Status](https://travis-ci.org/valotas/preact-context.svg?branch=master)](https://travis-ci.org/valotas/preact-context)
+# React's new Context Api for preact
 
+[![Build Status](https://travis-ci.org/valotas/preact-context.svg?branch=master)](https://travis-ci.org/valotas/preact-context)
+[![npm](https://img.shields.io/npm/v/preact-context.svg)](https://www.npmjs.com/package/preact-context)
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/valotas.svg)](https://saucelabs.com/u/valotas)
 
 This is an implementation of react's [new context api][rfcs]. You can read more
