@@ -2,7 +2,11 @@ const path = require("path");
 const rollupConfig = require("./rollup.config").createTestConfig;
 const pkg = require("./package.json");
 
-const sauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
+const isPullRequest =
+  process.env.TRAVIS_PULL_REQUEST &&
+  process.env.TRAVIS_PULL_REQUEST !== "false";
+const sauceLabs =
+  process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY && !isPullRequest;
 
 const sauceLabsLaunchers = {
   sl_chrome: {
