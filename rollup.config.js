@@ -55,7 +55,7 @@ const defaultConfig = [
     output: {
       name: "preactContext",
       file: pkg.browser.replace("min.", ""),
-      format: "iife",
+      format: "umd",
       globals: {
         preact: "preact"
       }
