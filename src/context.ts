@@ -3,7 +3,7 @@ import {
   BitmaskFactory,
   createEmitter,
   ContextValueEmitter,
-  noopContext
+  noopEmitter
 } from "./context-value-emitter";
 
 export interface ProviderProps<T> {
@@ -39,19 +39,19 @@ export function createContext<T>(
   const key = `_preactContextProvider-${ids++}`;
 
   class Provider extends Component<ProviderProps<T>, any> {
-    private _contextProvider: ContextValueEmitter<T>;
+    private _emitter: ContextValueEmitter<T>;
 
     constructor(props: ProviderProps<T>) {
       super(props);
-      this._contextProvider = createEmitter(props.value, bitmaskFactory);
+      this._emitter = createEmitter(props.value, bitmaskFactory);
     }
 
     getChildContext() {
-      return { [key]: this._contextProvider };
+      return { [key]: this._emitter };
     }
 
     componentDidUpdate() {
-      this._contextProvider.val(this.props.value);
+      this._emitter.val(this.props.value);
     }
 
     render() {
@@ -94,7 +94,7 @@ export function createContext<T>(
       if (previousProvider === this.context[key]) {
         return;
       }
-      (previousProvider || noopContext).unregister(this._updateContext);
+      (previousProvider || noopEmitter).unregister(this._updateContext);
       this.componentDidMount();
     }
 
@@ -129,7 +129,7 @@ export function createContext<T>(
     };
 
     private _getEmitter(): ContextValueEmitter<T> {
-      return this.context[key] || noopContext;
+      return this.context[key] || noopEmitter;
     }
   }
 
