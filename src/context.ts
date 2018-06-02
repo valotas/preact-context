@@ -34,7 +34,7 @@ let ids = 0;
 
 export function createContext<T>(
   value: T,
-  bitmaskFactory: BitmaskFactory<T> = defaultBitmaskFactory
+  bitmaskFactory?: BitmaskFactory<T>
 ): Context<T> {
   const key = `_preactContextProvider-${ids++}`;
 
@@ -43,7 +43,10 @@ export function createContext<T>(
 
     constructor(props: ProviderProps<T>) {
       super(props);
-      this._emitter = createEmitter(props.value, bitmaskFactory);
+      this._emitter = createEmitter(
+        props.value,
+        bitmaskFactory || defaultBitmaskFactory
+      );
     }
 
     getChildContext() {
