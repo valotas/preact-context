@@ -242,7 +242,9 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          &apos;{value}&apos; rendered {++renderCounter} times
+          &apos;
+          {value}
+          &apos; rendered {++renderCounter} times
         </span>
       );
 
@@ -274,7 +276,9 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          &apos;{value.prop}&apos; rendered {++renderCounter} times
+          &apos;
+          {value.prop}
+          &apos; rendered {++renderCounter} times
         </span>
       );
 
@@ -307,7 +311,9 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          &apos;{value.prop}&apos; rendered {++renderCounter} times
+          &apos;
+          {value.prop}
+          &apos; rendered {++renderCounter} times
         </span>
       );
 
@@ -432,7 +438,9 @@ describe("context", () => {
       function printValue(value: any) {
         return (
           <span className="result">
-            &apos;{value.prop}&apos; rendered {++renderCounter} times
+            &apos;
+            {value.prop}
+            &apos; rendered {++renderCounter} times
           </span>
         );
       }
@@ -466,7 +474,9 @@ describe("context", () => {
       let renderCounter = 0;
       const printValue = (value: any) => (
         <span className="result">
-          &apos;{value.prop}&apos; rendered {++renderCounter} times
+          &apos;
+          {value.prop}
+          &apos; rendered {++renderCounter} times
         </span>
       );
 

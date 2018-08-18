@@ -18,7 +18,9 @@
     "rules": {
       "require-jsdoc": 0,
       "typescript/interface-name-prefix": 0,
-      "typescript/explicit-member-accessibility": 0
+      "typescript/explicit-member-accessibility": 0,
+      "typescript/explicit-function-return-type": 0,
+      "typescript/no-var-requires": 0
     }
   },
   "scripts": {
@@ -30,6 +32,7 @@
     "prepare": "npm-run-all clean build rollup min",
     "watch:build": "npm run build -- -w",
     "lint": "eslint --ext ts --ext tsx --ext js src karma.conf.js",
+    "fix": "npm run lint -- --fix",
     "test:browser": "karma start",
     "test:jsdom": "mocha -r esm -r ./dist/esm/_tests/register-jsdom.js ./dist/esm/**/*.Spec.js",
     "test": "npm-run-all lint test:jsdom test:browser",
@@ -80,7 +83,7 @@
     "karma-sauce-launcher": "^1.2.0",
     "mocha": "^4.1.0",
     "npm-run-all": "^4.1.2",
-    "preact": "^8.2.9",
+    "preact": "^8.3.1",
     "prettier": "^1.12.1",
     "rimraf": "^2.6.2",
     "rollup": "^0.59.1",
