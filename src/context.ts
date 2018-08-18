@@ -5,6 +5,7 @@ import {
   ContextValueEmitter,
   noopEmitter
 } from "./context-value-emitter";
+import { getChildren } from "./utils";
 
 export interface ProviderProps<T> {
   value: T;
@@ -23,8 +24,8 @@ export interface Context<T> {
 }
 
 function getRenderer<T>(props: RenderableProps<ConsumerProps<T>>) {
-  const { children, render } = props;
-  return (children && children[0]) || render;
+  const { child } = getChildren(props);
+  return child || props.render;
 }
 
 const MAX_SIGNED_31_BIT_INT = 1073741823;
@@ -58,13 +59,13 @@ export function createContext<T>(
     }
 
     render() {
-      const { children } = this.props;
-      if (children && children.length > 1) {
-        // preact does not support fragments,
-        // therefore we wrap the children in a span
-        return h("span", null, children);
+      const { child, children } = getChildren(this.props);
+      if (child) {
+        return child;
       }
-      return ((children && children[0]) || null) as JSX.Element;
+      // preact does not support fragments,
+      // therefore we wrap the children in a span
+      return h("span", null, children);
     }
   }
 
