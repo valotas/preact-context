@@ -1,5 +1,5 @@
 const path = require("path");
-const rollupConfig = require("./rollup.config").createTestConfig;
+const rollup = require("./rollup.config");
 const pkg = require("./package.json");
 
 const isPullRequest =
@@ -69,7 +69,7 @@ const customLaunchers = Object.assign(sauceLabs ? sauceLabsLaunchers : {}, {
 const inlineCoreJs = () => {
   function inline(files) {
     files.unshift({
-      pattern: path.resolve("./node_modules/core-js/client/core.js"),
+      pattern: path.resolve("./node_modules/core-js/client/shim.js"),
       included: true,
       served: true,
       watched: false
@@ -116,7 +116,7 @@ module.exports = config =>
       "dist/esm/**/*.js": ["rollup"]
     },
 
-    rollupPreprocessor: rollupConfig(),
+    rollupPreprocessor: rollup.createTestConfig(),
 
     // test results reporter to use
     // possible values: 'dots', 'progress'

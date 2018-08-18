@@ -3,6 +3,7 @@ const commonjs = require("rollup-plugin-commonjs");
 const nodeResolve = require("rollup-plugin-node-resolve");
 const nodeGlobals = require("rollup-plugin-node-globals");
 const nodeBuiltins = require("rollup-plugin-node-builtins");
+const buble = require("rollup-plugin-buble");
 const pkg = require("./package.json");
 
 const loadPreactContextMin = preactContextId => {
@@ -40,7 +41,8 @@ function createTestConfig({ input, output } = {}) {
       nodeResolve({ browser: true }),
       commonjs({ include: "node_modules/**" }),
       nodeGlobals(),
-      nodeBuiltins()
+      nodeBuiltins(),
+      buble()
     ],
     output: createOutput({ file: output })
   };
