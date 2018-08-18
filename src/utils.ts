@@ -1,6 +1,6 @@
 import { RenderableProps } from "preact";
 
-/**
+/*
  * Extracts the children from the props and returns an object containing the
  * only element of the given array (preact always passes children as an array)
  * or null otherwise. The result contains always a reference to the original

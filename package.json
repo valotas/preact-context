@@ -18,7 +18,9 @@
     "rules": {
       "require-jsdoc": 0,
       "typescript/interface-name-prefix": 0,
-      "typescript/explicit-member-accessibility": 0
+      "typescript/explicit-member-accessibility": 0,
+      "typescript/explicit-function-return-type": 0,
+      "typescript/no-var-requires": 0
     }
   },
   "scripts": {
