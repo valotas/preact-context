@@ -9,7 +9,7 @@ import { RenderableProps } from "preact";
  * @param {RenderableProps<*>} props - the component's properties
  * @return {{ child: JSX.Element | null, children: JSX.Element[]}}
  */
-export function getChildren(props: RenderableProps<any>) {
+export function getOnlyChildAndChildren(props: RenderableProps<any>) {
   const children = props.children as JSX.Element[];
   const child = children.length === 1 ? children[0] : null;
   return { child, children };

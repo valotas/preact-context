@@ -5,7 +5,7 @@ import {
   ContextValueEmitter,
   noopEmitter
 } from "./context-value-emitter";
-import { getChildren } from "./utils";
+import { getOnlyChildAndChildren } from "./utils";
 
 export interface ProviderProps<T> {
   value: T;
@@ -24,7 +24,7 @@ export interface Context<T> {
 }
 
 function getRenderer<T>(props: RenderableProps<ConsumerProps<T>>) {
-  const { child } = getChildren(props);
+  const { child } = getOnlyChildAndChildren(props);
   return child || props.render;
 }
 
@@ -59,7 +59,7 @@ export function createContext<T>(
     }
 
     render() {
-      const { child, children } = getChildren(this.props);
+      const { child, children } = getOnlyChildAndChildren(this.props);
       if (child) {
         return child;
       }
