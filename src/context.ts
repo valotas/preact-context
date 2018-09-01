@@ -33,7 +33,7 @@ const MAX_SIGNED_31_BIT_INT = 1073741823;
 const defaultBitmaskFactory: BitmaskFactory<any> = () => MAX_SIGNED_31_BIT_INT;
 let ids = 0;
 
-export function createContext<T>(
+function _createContext<T>(
   value: T,
   bitmaskFactory?: BitmaskFactory<T>
 ): Context<T> {
@@ -145,3 +145,7 @@ export function createContext<T>(
     >
   };
 }
+
+// named and default export in order to have less problems with bundlers
+export default _createContext;
+export const createContext = _createContext;
