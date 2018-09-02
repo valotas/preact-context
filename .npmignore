@@ -3,3 +3,5 @@ dist/**/_tests/*
 .travis.yml
 tsconfig.json
 karma.conf.js
+rollup.config.js
+.eslintignore
