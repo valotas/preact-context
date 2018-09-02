@@ -11,10 +11,11 @@ const loadPreactContextMin = preactContextId => {
     load: id => {
       if (id === preactContextId) {
         return `
-          export var createContext = function() {
+        export var createContext = function() {
             var pc = window.preactContext;
             return pc.createContext.apply(pc, arguments);
-          }`;
+          }
+        export default createContext`;
       }
     }
   };
@@ -58,6 +59,7 @@ const defaultConfig = [
       name: "preactContext",
       file: pkg.browser.replace("min.", ""),
       format: "umd",
+      exports: "named",
       globals: {
         preact: "preact"
       }

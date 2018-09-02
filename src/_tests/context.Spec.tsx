@@ -7,6 +7,7 @@ import {
   render as preactRender
 } from "preact"; /**@jsx h */
 import * as sinon from "sinon";
+import defaultCreateContext from "../context";
 import { createContext } from "../context";
 import { html } from "./utils";
 
@@ -34,8 +35,12 @@ describe("context", () => {
     sandbox.restore();
   });
 
-  it("exposes a createContext function", () => {
+  it("exports a createContext function", () => {
     expect(createContext).toBeDefined();
+  });
+
+  it("exports a default function", () => {
+    expect(createContext).toEqual(defaultCreateContext);
   });
 
   describe("createContext", () => {
