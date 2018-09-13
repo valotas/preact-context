@@ -28,7 +28,7 @@
     "build": "tsc -p .",
     "rollup": "rollup -c",
     "rollup-test": "rollup -c --includeSpecFiles",
-    "min": "uglifyjs dist/context.js -o dist/context.min.js -c -m eval --mangle-props regex=/^_/ --passes 2",
+    "min": "uglifyjs dist/context.js -o dist/context.min.js -c -m eval --mangle-props regex=/^_/,reserved=[__extends] --passes 2",
     "prepare": "npm-run-all clean build rollup min",
     "watch:build": "npm run build -- -w",
     "lint": "eslint --ext ts --ext tsx --ext js src karma.conf.js",
