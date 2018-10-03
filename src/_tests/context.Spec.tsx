@@ -3,7 +3,6 @@ import {
   Component,
   RenderableProps,
   h,
-  options,
   render as preactRender
 } from "preact"; /**@jsx h */
 import * as sinon from "sinon";
@@ -24,10 +23,6 @@ describe("context", () => {
   before(() => {
     scratch = document.createElement("div");
     document.body.appendChild(scratch);
-  });
-
-  beforeEach(() => {
-    options.debounceRendering = (r: any) => r();
   });
 
   afterEach(() => {
