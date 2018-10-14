@@ -111,7 +111,7 @@ function _createContext<T>(
         );
       }
       if (typeof r === "function") {
-        return r(this.state.value || value);
+        return r(this.state.value);
       }
       console.warn(
         "Consumer is expecting a function as one and only child but didn't find any"
