@@ -14,10 +14,13 @@ export function createEmitter<T>(
 ): ContextValueEmitter<T> {
   let registeredUpdaters: Array<StateUpdater<T>> = [];
   let value = initialValue;
+
+  const diff = (newValue: T) => bitmaskFactory(value, newValue) | 0;
+
   return {
     register(updater: StateUpdater<T>) {
       registeredUpdaters.push(updater);
-      updater(value, 0);
+      updater(value, diff(value));
     },
     unregister(updater: StateUpdater<T>) {
       registeredUpdaters = registeredUpdaters.filter(i => i !== updater);
@@ -27,11 +30,10 @@ export function createEmitter<T>(
         return value;
       }
 
-      let diff = bitmaskFactory(value, newValue);
-      diff = diff |= 0;
+      const bitmask = diff(newValue);
 
       value = newValue;
-      registeredUpdaters.forEach(up => up(newValue, diff));
+      registeredUpdaters.forEach(up => up(newValue, bitmask));
       return value;
     }
   };
