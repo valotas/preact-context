@@ -9,3 +9,5 @@ export function html(el: HTMLElement, selector?: string) {
   expect(elements.length).toEqual(1);
   return elements[0].innerHTML;
 }
+
+export const Empty = () => null;

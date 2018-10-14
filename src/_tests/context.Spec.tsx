@@ -3,14 +3,13 @@ import {
   Component,
   RenderableProps,
   h,
+  options,
   render as preactRender
 } from "preact"; /**@jsx h */
 import * as sinon from "sinon";
 import defaultCreateContext from "../context";
 import { createContext } from "../context";
-import { html } from "./utils";
-
-const Empty = () => null;
+import { html, Empty } from "./utils";
 
 describe("context", () => {
   const sandbox = sinon.createSandbox();
@@ -25,8 +24,12 @@ describe("context", () => {
     document.body.appendChild(scratch);
   });
 
-  afterEach(() => {
+  beforeEach(() => {
+    options.debounceRendering = r => r();
     render(<Empty />);
+  });
+
+  afterEach(() => {
     sandbox.restore();
   });
 
