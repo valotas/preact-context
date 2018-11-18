@@ -66,6 +66,7 @@
     "@types/sinon": "^5.0.3",
     "browserify": "^16.2.3",
     "core-js": "^2.5.5",
+    "cryptiles": "^3.1.4",
     "eslint": "^5.9.0",
     "eslint-config-prettier": "^3.3.0",
     "eslint-config-typescript": "^1.0.2",
