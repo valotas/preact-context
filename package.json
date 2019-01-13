@@ -65,6 +65,7 @@
     "@types/mocha": "^5.2.0",
     "@types/sinon": "^5.0.3",
     "browserify": "^16.2.3",
+    "cached-path-relative": "^1.0.2",
     "core-js": "^2.5.5",
     "eslint": "^5.9.0",
     "eslint-config-prettier": "^3.3.0",
