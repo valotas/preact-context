@@ -139,11 +139,17 @@ module.exports = config =>
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     browsers: Object.keys(customLaunchers),
-    browserNoActivityTimeout: 5 * 60 * 1000,
+    browserNoActivityTimeout: sauceLabs ? 5 * 60 * 1000 : 30 * 1000,
     browserLogOptions: { terminal: true },
     browserConsoleLogOptions: { terminal: true },
 
     transports: ["polling", sauceLabs ? "" : "websocket"].filter(t => !!t),
+
+    sauceLabs: {
+      recordScreenshots: false,
+      public: "public",
+      testName: "preact-context karma tests"
+    },
 
     customLaunchers,
 
@@ -154,6 +160,8 @@ module.exports = config =>
     // Concurrency level
     // how many browser should be started simultaneous
     concurrency: 2,
+
+    captureTimeout: sauceLabs ? 7 * 60 * 1000 : 60000,
 
     plugins: [
       require("karma-mocha"),
