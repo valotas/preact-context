@@ -51,7 +51,6 @@ export const noopEmitter: ContextValueEmitter<any> = {
   }
 };
 
-
 export const warnEmitter: ContextValueEmitter<any> = {
   register(_: StateUpdater<any>) {
     console.warn("Consumer used without a Provider");

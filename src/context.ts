@@ -4,7 +4,7 @@ import {
   createEmitter,
   ContextValueEmitter,
   noopEmitter,
-  warnEmitter,
+  warnEmitter
 } from "./context-value-emitter";
 import { getOnlyChildAndChildren } from "./utils";
 
@@ -139,7 +139,10 @@ function _createContext<T>(
     };
 
     private _getEmitter(): ContextValueEmitter<T> {
-      return this.context[key] || ((options || {}).providerOptional ? noopEmitter : warnEmitter);
+      return (
+        this.context[key] ||
+        ((options || {}).providerOptional ? noopEmitter : warnEmitter)
+      );
     }
   }
 
