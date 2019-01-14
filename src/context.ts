@@ -3,7 +3,8 @@ import {
   BitmaskFactory,
   createEmitter,
   ContextValueEmitter,
-  noopEmitter
+  noopEmitter,
+  warnEmitter,
 } from "./context-value-emitter";
 import { getOnlyChildAndChildren } from "./utils";
 
@@ -23,6 +24,10 @@ export interface Context<T> {
   Consumer: ComponentConstructor<ConsumerProps<T>, ConsumerState<T>>;
 }
 
+export interface Options {
+  providerOptional?: Boolean;
+}
+
 function getRenderer<T>(props: RenderableProps<ConsumerProps<T>>) {
   const { child } = getOnlyChildAndChildren(props);
   return child || props.render;
@@ -35,7 +40,8 @@ let ids = 0;
 
 function _createContext<T>(
   value: T,
-  bitmaskFactory?: BitmaskFactory<T>
+  bitmaskFactory?: BitmaskFactory<T>,
+  options?: Options
 ): Context<T> {
   const key = `_preactContextProvider-${ids++}`;
 
@@ -133,7 +139,7 @@ function _createContext<T>(
     };
 
     private _getEmitter(): ContextValueEmitter<T> {
-      return this.context[key] || noopEmitter;
+      return this.context[key] || ((options || {}).providerOptional ? noopEmitter : warnEmitter);
     }
   }
 
