@@ -38,27 +38,3 @@ export function createEmitter<T>(
     }
   };
 }
-
-export const noopEmitter: ContextValueEmitter<any> = {
-  register(_: StateUpdater<any>) {
-    // do nothing
-  },
-  unregister(_: StateUpdater<any>) {
-    // do nothing
-  },
-  val(_: any) {
-    //do nothing;
-  }
-};
-
-export const warnEmitter: ContextValueEmitter<any> = {
-  register(_: StateUpdater<any>) {
-    console.warn("Consumer used without a Provider");
-  },
-  unregister(_: StateUpdater<any>) {
-    // do nothing
-  },
-  val(_: any) {
-    //do nothing;
-  }
-};

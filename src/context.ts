@@ -3,8 +3,7 @@ import {
   BitmaskFactory,
   createEmitter,
   ContextValueEmitter,
-  noopEmitter,
-  warnEmitter
+  StateUpdater
 } from "./context-value-emitter";
 import { getOnlyChildAndChildren } from "./utils";
 
@@ -44,6 +43,20 @@ function _createContext<T>(
   options?: Options
 ): Context<T> {
   const key = `_preactContextProvider-${ids++}`;
+
+  const defaultEmitter: ContextValueEmitter<any> = {
+    register(_: StateUpdater<any>) {
+      if (!options || !options.providerOptional) {
+        console.warn("Consumer used without a Provider");
+      }
+    },
+    unregister(_: StateUpdater<any>) {
+      // do nothing
+    },
+    val(_: any) {
+      //do nothing;
+    }
+  };
 
   class Provider extends Component<ProviderProps<T>, any> {
     private _emitter: ContextValueEmitter<T>;
@@ -104,7 +117,7 @@ function _createContext<T>(
       if (previousProvider === this.context[key]) {
         return;
       }
-      (previousProvider || noopEmitter).unregister(this._updateContext);
+      (previousProvider || defaultEmitter).unregister(this._updateContext);
       this.componentDidMount();
     }
 
@@ -139,10 +152,7 @@ function _createContext<T>(
     };
 
     private _getEmitter(): ContextValueEmitter<T> {
-      return (
-        this.context[key] ||
-        ((options || {}).providerOptional ? noopEmitter : warnEmitter)
-      );
+      return this.context[key] || defaultEmitter;
     }
   }
 
