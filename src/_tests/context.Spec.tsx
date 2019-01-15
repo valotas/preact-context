@@ -160,16 +160,20 @@ describe("context", () => {
     });
 
     it("does not warn if used without a Provider from a context with `providerOptional` set", () => {
-      const ctx = createContext("The Default Context", undefined, { providerOptional: true });
+      const ctx = createContext("The Default Context", undefined, {
+        providerOptional: true
+      });
       const warn = sandbox.stub(console, "warn");
       render(
         <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
       );
       sinon.assert.notCalled(warn);
     });
-    
+
     it("does not warn if used with a Provider from a context with `providerOptional` set", () => {
-      const ctx = createContext("The Default Context", undefined, { providerOptional: true });
+      const ctx = createContext("The Default Context", undefined, {
+        providerOptional: true
+      });
       const warn = sandbox.stub(console, "warn");
       render(
         <ctx.Provider value="init">
@@ -178,7 +182,6 @@ describe("context", () => {
       );
       sinon.assert.notCalled(warn);
     });
-    
 
     it("has access to the default value if no provider is given", () => {
       const ctx = createContext("The Default Context");
