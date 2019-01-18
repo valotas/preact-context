@@ -42,6 +42,35 @@ describe("context", () => {
   });
 
   describe("createContext", () => {
+    it("accepts an optional default value as first argument", () => {
+      const ctx = createContext("test", undefined, { providerOptional: true });
+      render(
+        <ctx.Consumer>{(value: String) => <p>Hello {value}</p>}</ctx.Consumer>
+      );
+      expect(html(scratch)).toEqual("<p>Hello test</p>");
+    });
+
+    it("accepts an optional bitmask factory as second argument", () => {
+      const bitmaskFactory = sandbox.stub();
+      const ctx = createContext("test", bitmaskFactory, {
+        providerOptional: true
+      });
+      render(
+        <ctx.Consumer>{(value: String) => <p>Hello {value}</p>}</ctx.Consumer>
+      );
+      expect(html(scratch)).toEqual("<p>Hello test</p>");
+      expect(bitmaskFactory.called);
+    });
+
+    it("accepts an optional options object as third argument", () => {
+      const options = { providerOptional: true };
+      const ctx = createContext("test", undefined, options);
+      render(
+        <ctx.Consumer>{(value: String) => <p>Hello {value}</p>}</ctx.Consumer>
+      );
+      expect(html(scratch)).toEqual("<p>Hello test</p>");
+    });
+
     it("creates an object with a Provider", () => {
       const ctx = createContext("");
       expect(ctx).toHaveProperty("Provider");
@@ -181,6 +210,16 @@ describe("context", () => {
         </ctx.Provider>
       );
       sinon.assert.notCalled(warn);
+    });
+
+    it("warns using the log object given in options when used without a Provider", () => {
+      const warn = sandbox.stub();
+      const options = { log: { warn } };
+      const ctx = createContext("The Default Context", undefined, options);
+      render(
+        <ctx.Consumer>{(value: string) => `Hi from '${value}'`}</ctx.Consumer>
+      );
+      sinon.assert.calledWith(warn, "Consumer used without a Provider");
     });
 
     it("has access to the default value if no provider is given", () => {

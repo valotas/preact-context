@@ -2,10 +2,11 @@ import { h, Component, ComponentConstructor, RenderableProps } from "preact";
 import {
   BitmaskFactory,
   createEmitter,
-  ContextValueEmitter,
-  StateUpdater
+  createDefaultEmitter,
+  ContextValueEmitter //,
 } from "./context-value-emitter";
 import { getOnlyChildAndChildren } from "./utils";
+export { Options } from "./context-value-emitter";
 
 export interface ProviderProps<T> {
   value: T;
@@ -21,10 +22,6 @@ export type ConsumerState<T> = ProviderProps<T>;
 export interface Context<T> {
   Provider: ComponentConstructor<ProviderProps<T>, {}>;
   Consumer: ComponentConstructor<ConsumerProps<T>, ConsumerState<T>>;
-}
-
-export interface Options {
-  providerOptional?: Boolean;
 }
 
 function getRenderer<T>(props: RenderableProps<ConsumerProps<T>>) {
@@ -44,19 +41,9 @@ function _createContext<T>(
 ): Context<T> {
   const key = `_preactContextProvider-${ids++}`;
 
-  const defaultEmitter: ContextValueEmitter<any> = {
-    register(_: StateUpdater<any>) {
-      if (!options || !options.providerOptional) {
-        console.warn("Consumer used without a Provider");
-      }
-    },
-    unregister(_: StateUpdater<any>) {
-      // do nothing
-    },
-    val(_: any) {
-      //do nothing;
-    }
-  };
+  const defaultEmitter: ContextValueEmitter<any> = createDefaultEmitter(
+    options || {}
+  );
 
   class Provider extends Component<ProviderProps<T>, any> {
     private _emitter: ContextValueEmitter<T>;

@@ -2,6 +2,15 @@ export type StateUpdater<T> = (val: T, bitmask: number) => void;
 
 export type BitmaskFactory<T> = (a: T, b: T) => number;
 
+export interface Log {
+  warn(...args: any[]): void;
+}
+
+export interface Options {
+  providerOptional?: Boolean;
+  log?: Log;
+}
+
 export interface ContextValueEmitter<T> {
   register: (updater: StateUpdater<T>) => void;
   unregister: (updater: StateUpdater<T>) => void;
@@ -37,4 +46,24 @@ export function createEmitter<T>(
       return value;
     }
   };
+}
+
+export function createDefaultEmitter({
+  providerOptional = false,
+  log = typeof console != undefined ? console : undefined
+}: Options): ContextValueEmitter<any> {
+  const emitter: ContextValueEmitter<any> = {
+    register(_: StateUpdater<any>) {
+      if (!providerOptional && log) {
+        log.warn("Consumer used without a Provider");
+      }
+    },
+    unregister(_: StateUpdater<any>) {
+      // do nothing
+    },
+    val(_: any) {
+      //do nothing;
+    }
+  };
+  return emitter;
 }
