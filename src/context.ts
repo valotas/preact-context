@@ -3,7 +3,8 @@ import {
   BitmaskFactory,
   createEmitter,
   createDefaultEmitter,
-  ContextValueEmitter //,
+  ContextValueEmitter,
+  Options
 } from "./context-value-emitter";
 import { getOnlyChildAndChildren } from "./utils";
 export { Options } from "./context-value-emitter";
