@@ -222,7 +222,6 @@ describe("context", () => {
       const ctx = createContext("The Default Context");
       const warn = sandbox.stub(console, "warn");
 
-      // @ts-ignore
       render(<ctx.Consumer>Nothing</ctx.Consumer>);
 
       sinon.assert.calledWith(
@@ -235,7 +234,6 @@ describe("context", () => {
       const ctx = createContext("The Default Context");
       sandbox.stub(console, "warn");
 
-      // @ts-ignore
       render(<ctx.Consumer>Something</ctx.Consumer>);
 
       expect(html(scratch)).toEqual("");
