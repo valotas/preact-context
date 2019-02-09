@@ -11,10 +11,9 @@ export interface ProviderProps<T> {
   value: T;
 }
 
-export interface ConsumerProps<T> {
-  render?: (val: T) => any;
+export type ConsumerProps<T> = {
   unstable_observedBits?: number;
-}
+} & ({ render: (val: T) => any } | { children: (val: T) => any });
 
 export type ConsumerState<T> = ProviderProps<T>;
 
@@ -25,7 +24,7 @@ export interface Context<T> {
 
 function getRenderer<T>(props: RenderableProps<ConsumerProps<T>>) {
   const { child } = getOnlyChildAndChildren(props);
-  return child || props.render;
+  return child || ("render" in props && props.render);
 }
 
 const MAX_SIGNED_31_BIT_INT = 1073741823;
@@ -103,7 +102,7 @@ function _createContext<T>(
     }
 
     render() {
-      const { render } = this.props;
+      const render = "render" in this.props && this.props.render;
       const r = getRenderer(this.props);
       if (render && render !== r) {
         console.warn(
