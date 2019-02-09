@@ -69,7 +69,7 @@ describe("context", () => {
       );
       render(
         <ctx.Provider value={2}>
-          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
+          <ctx.Consumer>{value => `result: '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
       expect(html(scratch)).toEqual("result: '2'");
@@ -77,7 +77,7 @@ describe("context", () => {
       // rerender
       render(
         <ctx.Provider value={3}>
-          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
+          <ctx.Consumer>{value => `result: '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
 
@@ -91,7 +91,7 @@ describe("context", () => {
       render(
         <ctx.Provider value={2}>
           <div />
-          <ctx.Consumer>{(value: string) => `result: '${value}'`}</ctx.Consumer>
+          <ctx.Consumer>{value => `result: '${value}'`}</ctx.Consumer>
         </ctx.Provider>
       );
       expect(html(scratch)).toEqual("<span><div></div>result: '2'</span>");
@@ -618,7 +618,7 @@ describe("context", () => {
       function NumberConsumer(props: RenderableProps<any>) {
         return (
           <numContext.Consumer>
-            {(value: string) => (
+            {value => (
               <div className={`num-consumer c${props.id}`}>
                 <span className="value">{value}</span>
                 {props.children}
