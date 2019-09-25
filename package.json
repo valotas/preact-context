@@ -94,6 +94,7 @@
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-node-resolve": "^4.0.0",
     "sinon": "^7.2.2",
+    "tslib": "^1.10.0",
     "typescript": "^3.2.2",
     "typescript-eslint-parser": "^19.0.2",
     "uglify-es": "^3.3.9"
