@@ -54,7 +54,11 @@ const defaultConfig = [
   {
     input: pkg.module,
     external: ["preact"],
-    context: "window",
+    plugins: [
+      nodeResolve({ browser: true }),
+      commonjs({ include: "node_modules/tslib/**" })
+    ],
+    // context: "window",
     output: {
       name: "preactContext",
       file: pkg.browser.replace("min.", ""),
@@ -75,7 +79,11 @@ const defaultConfig = [
   {
     input: pkg.module,
     external: ["preact"],
-    context: "global",
+    // context: "global",
+    plugins: [
+      nodeResolve({ browser: true }),
+      commonjs({ include: "node_modules/tslib/**" })
+    ],
     output: [{ file: pkg.main, format: "cjs" }]
   }
 ];
