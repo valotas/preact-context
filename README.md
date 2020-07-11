@@ -6,7 +6,8 @@
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/valotas.svg)](https://saucelabs.com/u/valotas)
 
 This is an implementation of react's [new context api][rfcs]. You can read more
-about it on [react's documentation][react-context-doc] page.
+about it on [react's documentation][react-context-doc] page. Please have in mind
+that **[preact X ships with a context implementation][preact-x-context]**
 
 This package provides the `createContext` factory function that can be used
 in order to create a context:
@@ -66,3 +67,4 @@ Cross-browser Testing Platform and Open Source <3 Provided by [Sauce Labs][sauce
 [react-context-doc]: https://reactjs.org/docs/context.html
 [typescript]: https://www.typescriptlang.org/
 [saucelabs]: https://saucelabs.com
+[preact-x-context]: https://preactjs.com/guide/v10/context/
