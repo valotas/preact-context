@@ -8,10 +8,12 @@ import {
 import {
   BitmaskFactory,
   createEmitter,
+  createDefaultEmitter,
   ContextValueEmitter,
-  noopEmitter
+  Options
 } from "./context-value-emitter";
 import { getOnlyChildAndChildren } from "./utils";
+export { Options } from "./context-value-emitter";
 
 export interface ProviderProps<T> {
   value: T;
@@ -44,9 +46,19 @@ let ids = 0;
 
 function _createContext<T>(
   value: T,
-  bitmaskFactory?: BitmaskFactory<T>
+  bitmaskFactory?: BitmaskFactory<T>,
+  options?: Options
 ): Context<T> {
   const key = `_preactContextProvider-${ids++}`;
+  const providerOptional: Boolean = !!(options && options.providerOptional);
+  const log =
+    (options && options.log) ||
+    (typeof console != "undefined" ? console : undefined);
+
+  const defaultEmitter: ContextValueEmitter<any> = createDefaultEmitter({
+    providerOptional,
+    log
+  });
 
   class Provider extends Component<ProviderProps<T>, any> {
     private _emitter: ContextValueEmitter<T>;
@@ -107,7 +119,7 @@ function _createContext<T>(
       if (previousProvider === this.context[key]) {
         return;
       }
-      (previousProvider || noopEmitter).unregister(this._updateContext);
+      (previousProvider || defaultEmitter).unregister(this._updateContext);
       this.componentDidMount();
     }
 
@@ -115,17 +127,19 @@ function _createContext<T>(
       // TODO: "render" in props check is only done to make TS happy
       const render = "render" in this.props && this.props.render;
       const r = getRenderer(this.props);
-      if (render && render !== r) {
-        console.warn(
+      if (render && render !== r && log) {
+        log.warn(
           "Both children and a render function are defined. Children will be used"
         );
       }
       if (typeof r === "function") {
         return r(this.state.value);
       }
-      console.warn(
-        "Consumer is expecting a function as one and only child but didn't find any"
-      );
+      if (log) {
+        log.warn(
+          "Consumer is expecting a function as one and only child but didn't find any"
+        );
+      }
     }
 
     private _updateContext = (value: T, bitmask: number) => {
@@ -143,7 +157,7 @@ function _createContext<T>(
     };
 
     private _getEmitter(): ContextValueEmitter<T> {
-      return this.context[key] || noopEmitter;
+      return this.context[key] || defaultEmitter;
     }
   }
 
